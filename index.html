@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0e1730">
+<title>Block Escape Rooms</title>
+<style>:root{--bg:#0e1730;--ink:#16263d;--pan:#15244a;--pan2:#203669;--tx:#eef4ff;--mu:#a9bbdc;--teal:#2fe0d0;--lime:#b6f542;--org:#ff9f1c;--red:#ff5a5f;--gold:#ffd23f;
+ --wall1:#3b4f7a;--wall2:#34476e;--floor1:#6b7a8f;--floor2:#5d6b80;--acc:#2fe0d0}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--tx);font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overscroll-behavior:none}
+button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
+h1,h2,h3,.hd{font-family:"Arial Black","Arial Rounded MT Bold",Impact,system-ui,sans-serif;font-weight:900;margin:0;letter-spacing:.3px}
+.mono{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+#app{height:100%}
+.page{height:100%;overflow:auto;padding:14px 16px 24px;background-image:linear-gradient(rgba(63,167,255,.07) 2px,transparent 2px),linear-gradient(90deg,rgba(63,167,255,.07) 2px,transparent 2px);background-size:40px 40px}
+.btn{background:var(--teal);color:#05202a;border:0;border-bottom:5px solid #12958a;border-radius:12px;padding:9px 16px;font-weight:800;min-height:46px;display:inline-flex;align-items:center;justify-content:center;gap:6px}
+.btn:active{transform:translateY(3px);border-bottom-width:2px}
+.btn.g{background:var(--pan2);color:var(--tx);border-bottom-color:#0d1d3c}.btn.o{background:var(--org);color:#2a1700;border-bottom-color:#b86d00}.btn.r{background:#ff6b6b;color:#2a0000;border-bottom-color:#b03030}.btn.y{background:var(--gold);color:#2a2000;border-bottom-color:#b8960a}
+.btn[disabled]{opacity:.45;pointer-events:none}
+/* ---------- home ---------- */
+.home{max-width:1240px;margin:0 auto}
+.logo{text-align:center;margin:6px 0 2px}
+.logo h1{font-size:clamp(30px,5vw,54px);line-height:1;color:var(--lime);text-shadow:4px 4px 0 #1f6b2a,8px 8px 0 rgba(0,0,0,.35)}
+.logo h1 span{color:var(--gold);text-shadow:4px 4px 0 #8a6d00,8px 8px 0 rgba(0,0,0,.35)}
+.logo p{color:var(--mu);margin:8px 0 14px}
+.rooms{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,370px),1fr));gap:14px}
+.rc{position:relative;background:var(--pan);border:3px solid var(--pan2);border-bottom:9px solid #0b1733;border-radius:18px;padding:14px;display:flex;gap:14px;align-items:center;text-align:left;width:100%}
+.rc:hover{border-color:var(--teal)}.rc:active{transform:translateY(3px)}
+.rc .ri{font-size:46px;width:72px;height:72px;display:grid;place-items:center;border-radius:14px;background:var(--c);box-shadow:inset 0 -6px 0 rgba(0,0,0,.25);flex:none}
+.rc h2{font-size:21px}.rc .bl{font-size:13.5px;color:#d6e2ff;margin-top:2px}.rc .s{color:var(--mu);font-size:14px}.rc .m{font-size:13px;margin-top:4px;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.lvl{letter-spacing:2px;color:var(--org)}.esc{color:var(--lime);font-weight:700}
+.rc .nx{position:absolute;top:-10px;right:12px;background:var(--gold);color:#2a2000;font-weight:900;font-size:12px;border-radius:8px;padding:2px 8px;border-bottom:3px solid #b8960a}
+.hbar{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:16px}
+.tip{color:var(--mu);text-align:center;font-size:14px;margin-top:12px}
+/* ---------- room view ---------- */
+.rv{height:100%;display:grid;grid-template-columns:1fr clamp(270px,25vw,350px);grid-template-rows:auto 1fr;grid-template-areas:"top top" "stage side";gap:8px;padding:8px;overflow:hidden}
+.rtop{grid-area:top;display:flex;align-items:center;gap:8px;min-width:0}
+.ib{background:var(--pan2);border:0;border-bottom:4px solid #0d1d3c;border-radius:11px;min-height:44px;min-width:44px;padding:0 12px;font-weight:800;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.ib:active{transform:translateY(2px);border-bottom-width:2px}.ib.hint{background:var(--gold);color:#2a2000;border-bottom-color:#b8960a}
+.pulse{animation:pu 1.2s ease-in-out infinite}@keyframes pu{50%{box-shadow:0 0 0 6px rgba(255,210,63,.45);transform:scale(1.06)}}
+.rname{font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.lbar{display:flex;align-items:center;gap:4px;background:var(--pan);border-radius:11px;padding:5px 10px;flex:1;min-width:0;max-width:420px}
+.lbar .tr{flex:1;height:14px;background:#0b1530;border-radius:7px;overflow:hidden;min-width:40px}.lbar .tr i{display:block;height:100%;background:linear-gradient(90deg,var(--teal),var(--lime));border-radius:7px;transition:width .6s}
+.lbar b{font-size:14px;white-space:nowrap}
+.sp{flex:1}
+.tmr{background:var(--pan);border-radius:11px;padding:6px 10px;font-weight:800;white-space:nowrap;font-size:14px}.tmr small{color:var(--mu);font-weight:600}
+.stagew{grid-area:stage;container-type:size;min-height:0;display:grid;place-items:center}
+.scene{position:relative;width:min(100cqw,170cqh);height:min(100cqh,72cqw);border-radius:16px;overflow:hidden;border:4px solid #0a1228;
+ background:linear-gradient(to bottom,transparent 62%,rgba(0,0,0,.35) 62%,transparent 63.5%),
+ repeating-linear-gradient(90deg,var(--floor1) 0 6%,var(--floor2) 6% 12%) bottom/100% 38% no-repeat,
+ linear-gradient(var(--wall2) 2px,transparent 2px) 0 0/100% 8.3% ,
+ linear-gradient(90deg,var(--wall2) 2px,transparent 2px) 0 0/8% 16.6%,var(--wall1);container-type:size}
+.scene:after{content:"";position:absolute;left:0;right:0;top:62%;height:38%;background:linear-gradient(rgba(0,0,0,.18),transparent 30%);pointer-events:none}
+.ob{position:absolute;border:0;padding:0;background:var(--c);border-radius:8px;box-shadow:inset 0 -7px 0 rgba(0,0,0,.28),inset 0 3px 0 rgba(255,255,255,.25),0 5px 0 rgba(0,0,0,.25);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;overflow:visible;z-index:2;transition:transform .12s,filter .12s}
+.ob:before{content:"";position:absolute;left:8%;right:8%;top:-5px;height:7px;background:radial-gradient(circle at 50% 60%,var(--c) 55%,transparent 60%) 0 0/16px 7px repeat-x;filter:brightness(1.12)}
+.ob:hover{filter:brightness(1.12);transform:translateY(-2px)}.ob:active{transform:translateY(2px)}
+.ob .ic{font-size:min(7cqw,11cqh);line-height:1;filter:drop-shadow(0 2px 0 rgba(0,0,0,.3))}
+.ob .nm{font-size:clamp(9px,1.55cqw,14px);font-weight:800;background:rgba(10,18,40,.78);color:#fff;border-radius:6px;padding:1px 6px;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ob .bd{position:absolute;top:-8px;right:-6px;font-size:clamp(11px,1.6cqw,16px);background:#0b1530;border-radius:50%;width:1.7em;height:1.7em;display:grid;place-items:center;border:2px solid #fff3}
+.ob.new .bd{background:var(--gold);border-color:#fff;color:#2a2000;font-weight:900}
+.ob.open{outline:3px solid rgba(182,245,66,.8);outline-offset:-3px}
+.ob.k-door{box-shadow:inset 0 -7px 0 rgba(0,0,0,.3),inset 0 0 0 5px rgba(0,0,0,.18),0 5px 0 rgba(0,0,0,.25)}
+.ob.k-decor .nm,.ob.k-trap .nm{opacity:.85}
+.side{grid-area:side;display:flex;flex-direction:column;gap:8px;min-height:0;overflow:auto}
+.card{background:var(--pan);border:2px solid var(--pan2);border-radius:14px;padding:9px 11px}
+.lbl{font-family:"Arial Black",Impact,sans-serif;font-size:12px;color:var(--teal);letter-spacing:.6px;display:flex;align-items:center;gap:6px;margin-bottom:5px}
+.lbl .sp{flex:1}.lbl button{font-family:system-ui;font-size:13px;font-weight:800;background:var(--pan2);border:0;border-bottom:3px solid #0d1d3c;border-radius:8px;padding:5px 9px;color:var(--tx);min-height:34px}
+.lbl button.on{background:var(--org);color:#2a1700}
+.goal .gt{font-size:17px;font-weight:800;line-height:1.3}.goal .gl{display:flex;gap:4px;margin-top:6px}.goal .gl i{flex:1;height:6px;border-radius:3px;background:#0b1530}.goal .gl i.d{background:var(--lime)}
+.pcl{display:flex;flex-wrap:wrap;gap:6px}
+.pc{background:#0b1530;border:3px solid var(--c);border-radius:10px;padding:2px 9px;text-align:center;min-width:52px;animation:pop .4s}
+.pc small{display:block;font-size:10.5px;color:var(--mu);font-weight:700;line-height:1.2}.pc b{font-size:20px;color:var(--c);font-family:ui-monospace,Menlo,monospace}
+.pc b .fr{font-size:15px}.pc .yr{font-size:11px;color:#ffe4a3}
+.empty{color:var(--mu);font-size:13px;grid-column:1/-1}
+.slots{display:grid;grid-template-columns:repeat(auto-fill,minmax(64px,1fr));gap:6px}
+.slot{background:#0b1530;border:2px solid #2b447a;border-radius:10px;min-height:64px;padding:4px 2px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:11px;font-weight:700;line-height:1.15;text-align:center}
+.slot span{font-size:26px;line-height:1.1}.slot.sel{border-color:var(--org);background:#3a2400}.slot.newi{animation:pop .5s}
+.nts textarea{width:100%;min-height:70px;height:100%;resize:none;background:#fff8d6;color:#3a2f00;border:3px solid #c9a400;border-radius:10px;padding:7px 9px;font:600 15px/1.45 ui-monospace,Menlo,monospace}
+.nts{flex:1;display:flex;flex-direction:column;min-height:120px}
+@keyframes pop{0%{transform:scale(.4)}70%{transform:scale(1.15)}100%{transform:scale(1)}}
+/* ---------- modal ---------- */
+.ov{position:fixed;inset:0;background:rgba(3,8,20,.78);display:flex;align-items:center;justify-content:center;z-index:50;padding:12px}
+.md{background:#fff;color:var(--ink);border-radius:18px;width:100%;max-width:660px;max-height:calc(100dvh - 24px);overflow:auto;padding:0 0 16px;box-shadow:0 10px 0 rgba(0,0,0,.35);border:4px solid #0a1228}
+.md.wide{max-width:1060px}
+.mh{position:sticky;top:0;background:#eef3ff;display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:3px solid #d5def0;z-index:3}
+.mh .e{font-size:30px}.mh h2{font-size:20px;color:#0b2a66;flex:1}
+.x{background:#dfe7f6;border:0;border-bottom:3px solid #b8c5de;border-radius:10px;min-width:44px;min-height:44px;font-weight:900;font-size:18px;color:var(--ink)}
+.mb{padding:12px 16px 0}
+.mb p{margin:8px 0}.wp{font-size:17px;line-height:1.55}
+.note{background:#fff8d6;border:2px dashed #c9a400;border-radius:10px;padding:8px 12px;margin:8px 0;line-height:1.6}
+.scr{background:#0d1b33;color:#9ff5e9;border-radius:12px;padding:10px 14px;font-family:ui-monospace,Menlo,monospace;border:3px solid #2b447a}
+.scr .wp,.scr p{color:#c8fff6}.scr b{color:#fff}
+.chalk{background:#2f5d3a;color:#fff;border-radius:12px;padding:10px 14px;border:6px solid #8e5a2b}
+.big{font-size:clamp(22px,4vw,34px);font-weight:800;text-align:center;margin:10px 0;letter-spacing:1px}
+.ctr{display:flex;justify-content:center}
+svg.grid,svg.shape{max-width:100%;height:auto}
+.fr{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;line-height:1.05;margin:0 3px;font-size:.95em;font-weight:800}
+.fr span:first-child{border-bottom:2.5px solid currentColor;padding:0 4px 1px}.fr span:last-child{padding:1px 4px 0}
+.mx{display:inline-flex;align-items:center;font-weight:800}
+.stk{border-collapse:collapse;font:800 22px/1.25 ui-monospace,Menlo,monospace;margin:8px auto;background:#f3f7ff;border-radius:10px}
+.stk td{padding:0}.stk td.op{padding:0 10px 0 8px;text-align:left;color:#c0392b}.stk td.i{text-align:right;padding-left:10px}.stk td.f{text-align:left;padding-right:12px}
+.stk tr.ln td{border-bottom:3px solid var(--ink)}
+.rcpt{background:#fffdf6;border:2px solid #d9cfae;border-radius:8px;padding:10px 14px;max-width:440px;margin:6px auto;box-shadow:0 4px 0 #e6dcc0}
+.rcpt .rt{text-align:center;font-weight:900;letter-spacing:2px;border-bottom:2px dashed #b9ad8a;padding-bottom:4px;margin-bottom:4px}
+.rcpt table{width:100%;border-collapse:collapse;font:700 18px/1.5 ui-monospace,Menlo,monospace}.rcpt td.l{font:600 16px system-ui;padding-right:8px}.rcpt td{padding:0}.rcpt td.i{text-align:right;width:1%;white-space:nowrap;padding:0}.rcpt td.f{text-align:left;width:3.2em;padding:0}
+.rcpt .rf{border-top:2px dashed #b9ad8a;margin-top:4px;padding-top:6px;font-size:16px}
+.seq{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:10px 0}
+.seq b{background:#e8f1ff;border:3px solid #7aa6e8;border-bottom-width:6px;border-radius:10px;padding:6px 12px;font:800 24px ui-monospace,Menlo,monospace;min-width:52px;text-align:center}
+.abc{display:grid;grid-template-columns:repeat(13,1fr);gap:3px;margin:8px 0}.abc span{background:#eef3ff;color:#16263d;border-radius:6px;text-align:center;font:700 12px ui-monospace,Menlo,monospace;padding:2px 0;line-height:1.2}.abc b{display:block;font-size:15px;color:#0b2a66}
+.cph{font-size:19px;line-height:1.9;padding-left:28px;margin:6px 0}.cph li{white-space:nowrap}.scr .cph{color:#fff}
+.clocks{display:flex;gap:12px;justify-content:center}.clocks div{background:#101c34;color:#7dff9a;border-radius:12px;padding:8px 16px;text-align:center;border:3px solid #2b447a}.clocks small{display:block;color:#a9bbdc}.clocks b{font-size:26px}
+.flags{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:10px 0}.flag{background:var(--c);border-radius:6px 14px 14px 6px;padding:8px 14px;min-width:84px;text-align:center;color:#111;border-left:6px solid #5b3a1a;box-shadow:0 4px 0 rgba(0,0,0,.25)}.flag span{display:block;font-size:14px}.flag b{font-size:24px}
+.cchip{display:inline-block;background:var(--c);color:#111;font-weight:800;border-radius:8px;padding:0 8px;margin:1px 2px;font-size:.92em;box-shadow:inset 0 -3px 0 rgba(0,0,0,.2);white-space:nowrap}
+.maze{border-collapse:separate;border-spacing:4px;margin:4px auto}.maze td{width:46px;height:42px;text-align:center;background:#2a2a48;color:#ffd0d0;font:800 18px ui-monospace,Menlo,monospace;border-radius:6px;box-shadow:inset 0 0 0 2px #ff4d4d55}
+.maze td.st{background:#2e8b57;color:#fff}.maze td.en{background:#c9a227;color:#222}
+.got{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.got div{background:#e9fbf0;border:3px solid #2ea86a;border-radius:12px;padding:6px 12px;font-weight:800;animation:pop .5s}.got span{font-size:26px;vertical-align:middle;margin-right:4px}
+.usebar{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}.usebar button{background:#eef3ff;border:2px solid #9fb4d8;border-bottom-width:5px;border-radius:12px;padding:6px 12px;min-height:50px;font-weight:800;color:var(--ink)}.usebar button span{font-size:24px;vertical-align:middle;margin-right:4px}
+.msg{min-height:26px;font-weight:800;margin:6px 0}.bad{color:#c62828}.good{color:#14783f}
+.shake{animation:sh .35s}@keyframes sh{25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+/* ---------- lock modal ---------- */
+.lkg{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:14px;padding:12px 14px 0}
+.cluep{background:#f6f8fd;border:2px solid #d5def0;border-radius:14px;padding:8px 10px;min-width:0;max-height:calc(100dvh - 130px);overflow:auto}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px}.tabs button{background:#e3eaf7;border:0;border-bottom:3px solid #b8c5de;border-radius:9px;padding:4px 9px;font-size:13px;font-weight:800;min-height:36px;color:var(--ink)}.tabs button.on{background:#0b2a66;color:#fff;border-bottom-color:#051634}
+.lockp{min-width:0}.lp{font-size:17px;font-weight:700;margin:2px 0 8px}
+.mech{background:#1b2440;border-radius:16px;padding:12px;color:#fff;border-bottom:6px solid #0b1228}
+.kd{background:#0b1a10;color:#7dff9a;font:800 32px ui-monospace,Menlo,monospace;border-radius:10px;padding:6px 12px;text-align:right;min-height:54px;letter-spacing:3px;border:3px solid #2e5a3a;margin-bottom:8px;overflow:hidden}
+.keys{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.keys button,.pal button,.dpad button{background:#3a4a78;border:0;border-bottom:5px solid #1c2647;border-radius:11px;min-height:52px;font:800 24px system-ui;color:#fff}
+.keys button:active,.pal button:active,.dpad button:active,.whl button:active{transform:translateY(3px);border-bottom-width:2px}
+.go{width:100%;margin-top:9px;background:var(--lime);color:#173000;border:0;border-bottom:6px solid #5f9a12;border-radius:12px;min-height:54px;font:900 20px "Arial Black",system-ui}
+.go:active{transform:translateY(3px);border-bottom-width:3px}
+.dials{display:flex;gap:8px;justify-content:center;align-items:center}
+.whl{display:flex;flex-direction:column;align-items:center;gap:4px}
+.whl button{background:#3a4a78;border:0;border-bottom:4px solid #1c2647;border-radius:10px;width:58px;min-height:44px;font-size:20px;color:#fff}
+.whl b{width:58px;height:62px;display:grid;place-items:center;background:linear-gradient(#c9a227,#fff2a8 45%,#fff2a8 55%,#c9a227);color:#2a1d00;font:900 34px ui-monospace,Menlo,monospace;border-radius:8px;border:3px solid #6b5100}
+.dsep{font:900 30px ui-monospace,Menlo,monospace;color:#ffd23f}
+.slotsr{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;min-height:46px;margin-bottom:9px}
+.slotsr i{width:40px;height:40px;border-radius:9px;border:3px dashed #5a6a98;display:grid;place-items:center;font-style:normal;font-size:22px;font-weight:900}
+.slotsr i.f{border-style:solid;border-color:#fff;background:var(--c,#3a4a78)}
+.pal{display:flex;gap:6px}.pal button{flex:1;background:var(--c);color:#111;font-size:15px;min-width:0;padding:0 2px;border-bottom-color:rgba(0,0,0,.35)}
+.pal button span{display:block;font-size:20px;line-height:1}
+.dpad{display:grid;grid-template-columns:repeat(3,64px);grid-template-rows:repeat(2,56px);gap:7px;justify-content:center}
+.dpad [data-d=U]{grid-column:2;grid-row:1}.dpad [data-d=L]{grid-column:1;grid-row:2}.dpad [data-d=D]{grid-column:2;grid-row:2}.dpad [data-d=R]{grid-column:3;grid-row:2}
+.erow{display:flex;gap:7px;margin-top:8px}.erow button{flex:1;background:#5a3a4a;border:0;border-bottom:4px solid #2c1a24;border-radius:10px;min-height:42px;font-weight:800;color:#fff}
+.hrow{display:flex;gap:8px;margin-top:8px;align-items:center;flex-wrap:wrap}
+.hint{background:#e9fbf0;border-left:6px solid #2ea86a;border-radius:8px;padding:7px 11px;margin:7px 0;font-size:15.5px;animation:fin .35s}@keyframes fin{from{opacity:0}to{opacity:1}}
+.hint b{display:block;font-size:12px;color:#14783f;letter-spacing:.5px}
+.hint .stk{font-size:19px}
+/* ---------- fx ---------- */
+#fx{position:fixed;inset:0;z-index:80;pointer-events:none;display:none;align-items:center;justify-content:center}
+#fx.on{display:flex}
+.plk{width:150px;height:170px;position:relative;animation:pop .35s}
+.plk .sh{position:absolute;left:30px;top:0;width:90px;height:90px;border:18px solid #c9d3e6;border-bottom:0;border-radius:50px 50px 0 0;transform-origin:85% 100%;animation:shk .5s .25s forwards}
+.plk .bo{position:absolute;left:0;bottom:0;width:150px;height:105px;background:linear-gradient(#ffd23f,#e0a800);border-radius:18px;border-bottom:10px solid #9a7400;display:grid;place-items:center;font:900 22px "Arial Black",sans-serif;color:#4a3500}
+@keyframes shk{to{transform:translateY(-26px) rotate(28deg)}}
+.cf{position:fixed;width:14px;height:14px;border-radius:3px;z-index:81;pointer-events:none;animation:cf 1.3s ease-out forwards}
+@keyframes cf{0%{transform:translate(0,0) rotate(0)}100%{transform:translate(var(--dx),var(--dy)) rotate(540deg);opacity:0}}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:18px;background:#16263d;border:3px solid var(--org);border-radius:12px;padding:10px 16px;z-index:90;text-align:center;max-width:min(560px,92vw);font-weight:700;animation:pop .3s}
+/* ---------- grown-up / workshop ---------- */
+.wrap{max-width:1100px;margin:0 auto}
+.topb{display:flex;gap:10px;align-items:center;margin-bottom:12px}.topb h1{font-size:24px;color:var(--lime);flex:1}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:14px}
+.panel{background:var(--pan);border:3px solid var(--pan2);border-radius:16px;padding:14px}
+.panel h3{font-size:16px;color:var(--teal);margin-bottom:8px}
+.seg{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}.seg button{flex:1;background:#0b1530;border:2px solid #2b447a;border-bottom-width:5px;border-radius:11px;min-height:46px;font-weight:800;padding:4px 10px}
+.seg button.on{background:var(--teal);color:#05202a;border-color:#12958a}
+.chips{display:flex;gap:6px;flex-wrap:wrap}.chips button{background:#0b1530;border:2px solid #2b447a;border-radius:20px;padding:6px 12px;font-weight:700;min-height:40px}.chips button.on{background:#1f5f3a;border-color:var(--lime)}
+.small{font-size:13px;color:var(--mu)}
+.logt{width:100%;border-collapse:collapse;font-size:14px}.logt td,.logt th{border-bottom:1px solid #2b447a;padding:6px 4px;text-align:left;vertical-align:top}.logt th{color:var(--mu);font-size:12px}
+.pin{max-width:330px;margin:0 auto;text-align:center}.pin .dots{display:flex;justify-content:center;gap:12px;margin:12px 0}.pin .dots i{width:20px;height:20px;border-radius:50%;border:3px solid #0b2a66}.pin .dots i.f{background:#0b2a66}
+.pin .keys button{background:#e3eaf7;color:var(--ink);border-bottom-color:#b8c5de}
+.fld{width:100%;background:#0b1530;border:2px solid #2b447a;border-radius:12px;color:var(--tx);font:600 17px system-ui;padding:10px 12px}
+textarea.fld{min-height:90px;resize:vertical}
+.fl{display:block;font-weight:800;margin:10px 0 5px}
+.mylist{display:flex;flex-direction:column;gap:8px}.myl{display:flex;gap:8px;align-items:center;background:#0b1530;border-radius:12px;padding:8px 10px}.myl .q{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dadq{font-size:clamp(20px,3vw,30px);font-weight:800;background:#fff8d6;color:#3a2f00;border-radius:14px;padding:14px 18px;border:3px solid #c9a400;margin-bottom:12px;white-space:pre-wrap}
+.ho{display:grid;place-items:center;text-align:center;height:100%}.ho .e{font-size:90px}
+.dadgrid{display:grid;grid-template-columns:1fr minmax(300px,420px);gap:16px;align-items:start}
+.win{text-align:center;padding:10px 16px 0}.win h2{font-size:32px;color:#14783f}.win .bdg{display:inline-block;background:#fff3c4;border:2px solid #c9a400;border-radius:12px;padding:4px 12px;margin:4px;font-weight:800}
+.win .row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:14px}
+/* ---------- responsive ---------- */
+@media (orientation:portrait),(max-width:860px){
+ .rv{grid-template-columns:1fr;grid-template-rows:auto minmax(0,1fr) auto;grid-template-areas:"top" "stage" "side"}
+ .scene{width:100cqw;height:min(100cqh,105cqw)}
+ .side{display:grid;grid-template-columns:1fr 1fr;grid-auto-rows:min-content;align-content:start;overflow:visible}
+ .side .goal,.side .nts{grid-column:1/-1}.nts{min-height:0}.nts textarea{min-height:90px}
+ .lkg{grid-template-columns:1fr}.cluep{max-height:38dvh}
+ .dadgrid{grid-template-columns:1fr}
+}
+@media (max-width:520px){
+ .rv{padding:6px;gap:6px}.scene{border-width:3px;height:min(100cqh,130cqw)}
+ .rtop .ib span,.rname{display:none}.ib{padding:0 9px}
+ .lbar{padding:4px 8px}
+ .ob .nm{font-size:9.5px;padding:0 3px;white-space:normal;line-height:1.05;text-align:center}.ob:before{display:none}
+ .card{padding:7px 8px}.goal .gt{font-size:15px}
+ .side{gap:6px}.slots{grid-template-columns:repeat(auto-fill,minmax(52px,1fr))}.slot{min-height:54px;font-size:10px}.slot span{font-size:22px}
+ .nts textarea{min-height:56px;font-size:14px}
+ .ov{padding:6px}.mb{padding:10px 12px 0}.lkg{padding:10px 10px 0;gap:10px}
+ .keys button{min-height:46px}.whl button{width:48px}.whl b{width:48px;height:52px;font-size:28px}
+ .abc{grid-template-columns:repeat(9,1fr)}
+ .maze td{width:40px;height:36px;font-size:16px}
+}
+.theme-lab{--wall1:#e7eef6;--wall2:#cfdbe8;--floor1:#9fb3c8;--floor2:#8aa0b8}
+.theme-ship{--wall1:#8a5a33;--wall2:#6f4526;--floor1:#a0703f;--floor2:#8d6034}
+.theme-space{--wall1:#2a3558;--wall2:#3a4a78;--floor1:#4b5878;--floor2:#3f4b69}
+.theme-museum{--wall1:#b8a07a;--wall2:#a38c66;--floor1:#7a5c3e;--floor2:#6a4f35}
+.theme-school{--wall1:#f2d9a6;--wall2:#e3c68d;--floor1:#c49a6c;--floor2:#b38a5e}
+
+@media (min-width:1100px) and (min-height:760px){.rc{min-height:150px;padding:18px}.rc .ri{width:96px;height:96px;font-size:60px}.rc h2{font-size:24px}.rooms{gap:18px}.logo h1{font-size:60px}}
+@media (max-width:520px){.rc{padding:10px;gap:10px;border-bottom-width:6px}.rc .ri{width:56px;height:56px;font-size:34px}.rc h2{font-size:18px}.rc .bl{display:none}.rooms{gap:10px}.logo p{margin:6px 0 10px;font-size:14px}.hbar .btn{flex:1;min-width:150px}}
+</style></head><body><div id="app"></div><div id="fx"></div>
+<script>
+// ===== RNG + helpers =====
+function mulberry(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+let RNG=Math.random;
+const ri=(a,b)=>a+Math.floor(RNG()*(b-a+1));
+const pick=a=>a[Math.floor(RNG()*a.length)];
+const shuf=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(RNG()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
+const gcd=(a,b)=>b?gcd(b,a%b):Math.abs(a);const lcm=(a,b)=>a/gcd(a,b)*b;
+const isPrime=n=>{if(n<2)return false;for(let i=2;i*i<=n;i++)if(n%i==0)return false;return true;};
+const m2=x=>(Math.round(x*100)/100).toFixed(2);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const LET='ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+// ===== render helpers =====
+const fr=(n,d)=>`<span class="fr"><span>${n}</span><span>${d}</span></span>`;
+const mx=(w,n,d)=>`<span class="mx">${w}${fr(n,d)}</span>`;
+// stacked column arithmetic, aligned on place value / decimal point
+function stack(nums,op,o={}){const ps=nums.map(s=>{s=String(s);const i=s.indexOf('.');return i<0?[s,'']:[s.slice(0,i),s.slice(i)];});
+ let h='<table class="stk"><tbody>';ps.forEach((p,i)=>{const last=i==ps.length-1;h+=`<tr class="${last?'ln':''}"><td class="op">${last&&op?op:''}</td><td class="i">${p[0]}</td><td class="f">${p[1]}</td></tr>`;});
+ if(o.res!==undefined){const s=String(o.res),i=s.indexOf('.');h+=`<tr><td class="op"></td><td class="i">${i<0?s:s.slice(0,i)}</td><td class="f">${i<0?'':s.slice(i)}</td></tr>`;}
+ return h+'</tbody></table>';}
+// receipt / manifest: labels + amounts aligned on the decimal point
+function receipt(title,rows,foot){let h=`<div class="rcpt"><div class="rt">${title}</div><table><tbody>`;
+ rows.forEach(r=>{const s=String(r[1]),i=s.indexOf('.');h+=`<tr class="${r[2]||''}"><td class="l">${r[0]}</td><td class="i">${i<0?s:s.slice(0,i)}</td><td class="f">${i<0?'':s.slice(i)}</td></tr>`;});
+ return h+`</tbody></table>${foot?`<div class="rf">${foot}</div>`:''}</div>`;}
+function clockSvg(h,m,sz=150){const hd=(h%12)*30+m*0.5,md=m*6;let t='';for(let i=1;i<=12;i++){const a=i*30*Math.PI/180;t+=`<text x="${(60+44*Math.sin(a)).toFixed(1)}" y="${(64-44*Math.cos(a)).toFixed(1)}" text-anchor="middle" font-size="11" font-weight="700" fill="#16263d">${i}</text>`;}
+ return `<svg viewBox="0 0 120 120" width="${sz}" height="${sz}"><circle cx="60" cy="60" r="56" fill="#f4f8ff" stroke="#16263d" stroke-width="5"/>${t}<line x1="60" y1="60" x2="${(60+28*Math.sin(hd*Math.PI/180)).toFixed(1)}" y2="${(60-28*Math.cos(hd*Math.PI/180)).toFixed(1)}" stroke="#16263d" stroke-width="6" stroke-linecap="round"/><line x1="60" y1="60" x2="${(60+42*Math.sin(md*Math.PI/180)).toFixed(1)}" y2="${(60-42*Math.cos(md*Math.PI/180)).toFixed(1)}" stroke="#e8433f" stroke-width="3.5" stroke-linecap="round"/><circle cx="60" cy="60" r="4" fill="#16263d"/></svg>`;}
+const tm=(h,m)=>{const ap=h>=12?'PM':'AM';let hh=h%12;if(hh==0)hh=12;return `${hh}:${String(m).padStart(2,'0')} ${ap}`;};
+// coordinate grid (first quadrant)
+function gridSvg(n,pts=[],o={}){const c=24,pad=26,W=pad+n*c+12;let s=`<svg viewBox="0 0 ${W} ${W}" class="grid" width="${o.w||260}">`;
+ for(let i=0;i<=n;i++){s+=`<line x1="${pad+i*c}" y1="6" x2="${pad+i*c}" y2="${6+n*c}" stroke="#9fb4d8" stroke-width="${i==0?2.5:1}"/><line x1="${pad}" y1="${6+i*c}" x2="${pad+n*c}" y2="${6+i*c}" stroke="#9fb4d8" stroke-width="${i==n?2.5:1}"/>`;
+  s+=`<text x="${pad+i*c}" y="${n*c+22}" font-size="11" text-anchor="middle" fill="#334">${i}</text><text x="${pad-8}" y="${6+(n-i)*c+4}" font-size="11" text-anchor="end" fill="#334">${i}</text>`;}
+ s+=`<text x="${pad+n*c+6}" y="${n*c+8}" font-size="12" font-weight="700" fill="#334">x</text><text x="${pad-4}" y="4" font-size="12" font-weight="700" fill="#334" dy="6" dx="-14">y</text>`;
+ pts.forEach(p=>{const X=pad+p.x*c,Y=6+(n-p.y)*c;s+=`<circle cx="${X}" cy="${Y}" r="6" fill="${p.c||'#e8433f'}" stroke="#fff" stroke-width="2"/>${p.l?`<text x="${X+8}" y="${Y-7}" font-size="13" font-weight="800" fill="#16263d">${p.l}</text>`:''}`;});
+ return s+'</svg>';}
+function lshapeSvg(W,H,top,right,unit,pond){// full W x H, top-right notch removed
+ const sc=Math.min(200/W,150/H),w=W*sc,h=H*sc,cw=(W-top)*sc,ch=(H-right)*sc,x0=40,y0=20;
+ const pts=[[x0,y0],[x0+w-cw,y0],[x0+w-cw,y0+ch],[x0+w,y0+ch],[x0+w,y0+h],[x0,y0+h]].map(p=>p.join(',')).join(' ');
+ let s=`<svg viewBox="0 0 ${w+90} ${h+56}" width="300" class="shape"><polygon points="${pts}" fill="#bfe3ff" stroke="#16263d" stroke-width="3"/>`;
+ if(pond){const pw=pond*sc;s+=`<rect x="${x0+12}" y="${y0+h-pw-12}" width="${pw}" height="${pw}" fill="#2fa3e0" stroke="#16263d" stroke-width="2"/><text x="${x0+12+pw/2}" y="${y0+h-pw/2-8}" font-size="11" text-anchor="middle" fill="#fff" font-weight="700">pool</text>`;}
+ s+=`<text x="${x0+w/2}" y="${y0+h+20}" text-anchor="middle" font-size="15" font-weight="800">${W} ${unit}</text>`;
+ s+=`<text x="${x0-8}" y="${y0+h/2}" text-anchor="end" font-size="15" font-weight="800">${H} ${unit}</text>`;
+ s+=`<text x="${x0+(w-cw)/2}" y="${y0-5}" text-anchor="middle" font-size="15" font-weight="800">${top} ${unit}</text>`;
+ s+=`<text x="${x0+w+6}" y="${y0+ch+(h-ch)/2}" font-size="15" font-weight="800">${right} ${unit}</text>`;
+ return s+'</svg>';}
+function boxSvg(l,w,h,unit){return `<svg viewBox="0 0 240 170" width="260" class="shape"><polygon points="40,60 150,60 150,150 40,150" fill="#ffd38a" stroke="#16263d" stroke-width="3"/><polygon points="40,60 80,25 190,25 150,60" fill="#ffe7b8" stroke="#16263d" stroke-width="3"/><polygon points="150,60 190,25 190,115 150,150" fill="#f2b45a" stroke="#16263d" stroke-width="3"/><text x="95" y="166" text-anchor="middle" font-size="15" font-weight="800">${l} ${unit}</text><text x="196" y="80" font-size="15" font-weight="800">${h} ${unit}</text><text x="178" y="40" font-size="15" font-weight="800" text-anchor="start" dx="8">${w} ${unit}</text></svg>`;}
+const seqHtml=a=>`<div class="seq">${a.map(x=>`<b>${x}</b>`).join('')}</div>`;
+// ===== puzzle generators (numeric answers) =====
+// each make(D,o) -> {clue, prompt, ans, hints:[nudge,bigger,worked], tag}
+const TOPICS={ooo:'Order of operations',word:'Multi-step word problems',frac:'Fractions',dec:'Decimals & money',fpm:'Factors, primes & multiples',pattern:'Patterns',geo:'Area, perimeter & volume',time:'Elapsed time',coord:'Coordinate grids',logic:'Logic & ciphers',stretch:'Stretch (6th–7th grade)'};
+const GEN={};
+GEN.ooo={topic:'ooo',make(D){let e,v,h2,h3;
+ if(D==1){const a=ri(3,12),b=ri(3,9),c=ri(7,15),d=ri(1,c-3);v=a+b*(c-d);e=`${a} + ${b} × (${c} − ${d})`;h2=`Brackets first: ${c} − ${d} = ${c-d}. Now it is ${a} + ${b} × ${c-d}.`;h3=`Multiply before adding: ${b} × ${c-d} = ${b*(c-d)}. Last step: ${a} + ${b*(c-d)} = ?`;}
+ else if(D==2){const p=ri(9,16),q=ri(2,p-3),k=ri(3,9),x=(p-q)*k,r=ri(2,6),s=ri(4,25);v=k*r+s;e=`${x} ÷ (${p} − ${q}) × ${r} + ${s}`;h2=`Brackets: ${p} − ${q} = ${p-q}. Now ${x} ÷ ${p-q} × ${r} + ${s}. Do × and ÷ from left to right.`;h3=`${x} ÷ ${p-q} = ${k}, then ${k} × ${r} = ${k*r}. Last: ${k*r} + ${s} = ?`;}
+ else{let a,b,c,d,f,m;do{a=ri(6,12);b=ri(2,9);c=ri(2,9);d=ri(1,8);f=ri(2,6);m=b*(c+d)/f;}while(m%1||a*a-m<=0);v=a*a-m;e=`${a}² − ${b} × (${c} + ${d}) ÷ ${f}`;h2=`${a}² means ${a} × ${a} = ${a*a}. Brackets: ${c} + ${d} = ${c+d}.`;h3=`${b} × ${c+d} = ${b*(c+d)}, then ÷ ${f} = ${m}. Last: ${a*a} − ${m} = ?`;}
+ return {clue:`<div class="big mono">${e}</div>`,prompt:'Find the value of the expression.',ans:String(v),hints:['Not everything goes left to right. Order: brackets, then powers, then × and ÷ (left to right), then + and − (left to right).',h2,h3]};}};
+GEN.pattern={topic:'pattern',make(D){const t=pick(D==1?['x2p','grow','alt']:D==2?['x2p','grow','alt','sq']:['sq','fib','alt','x3m']);let a=[],n,r,h2,h3;
+ if(t=='x2p'){const c=ri(1,3);a=[ri(2,6)];while(a.length<5)a.push(a.at(-1)*2+c);n=a.at(-1)*2+c;r=`double it, then add ${c}`;h2=`Try doubling: ${a[0]} × 2 = ${a[0]*2}. How far is that from ${a[1]}?`;h3=`Rule: double, then add ${c}. ${a.at(-1)} × 2 = ${a.at(-1)*2}, then + ${c} = ?`;}
+ else if(t=='grow'){const k=ri(1,3);let j=ri(2,5);a=[ri(3,20)];while(a.length<6){a.push(a.at(-1)+j);j+=k;}n=a.at(-1)+j;r='jumps grow';h2=`Write the jumps: +${a[1]-a[0]}, +${a[2]-a[1]}, +${a[3]-a[2]}... The jumps grow by ${k} each time.`;h3=`The last jump was +${a[5]-a[4]}, so the next jump is +${j}. ${a.at(-1)} + ${j} = ?`;}
+ else if(t=='alt'){const m=ri(2,3),s=ri(1,4);a=[ri(3,9)];let i=0;while(a.length<6){a.push(i%2==0?a.at(-1)*m:a.at(-1)-s);i++;}n=i%2==0?a.at(-1)*m:a.at(-1)-s;r='two moves take turns';h2=`Two different moves take turns. ${a[0]} → ${a[1]} is one move, ${a[1]} → ${a[2]} is another.`;h3=`The moves are "× ${m}" then "− ${s}", over and over. The next move is ${i%2==0?'× '+m:'− '+s}: ${a.at(-1)} ${i%2==0?'×':'−'} ${i%2==0?m:s} = ?`;}
+ else if(t=='sq'){const c=ri(1,9),s=ri(2,6);for(let k=s;k<s+5;k++)a.push(k*k+c);n=(s+5)*(s+5)+c;h2=`Look for square numbers (4, 9, 16, 25...) hiding inside: ${a[0]} − ${c} = ${s*s}.`;h3=`Each number is a square plus ${c}: ${s}² + ${c}, ${s+1}² + ${c}... Next is ${s+5}² + ${c} = ${(s+5)*(s+5)} + ${c} = ?`;}
+ else if(t=='fib'){a=[ri(2,6),ri(3,9)];while(a.length<6)a.push(a.at(-1)+a.at(-2));n=a.at(-1)+a.at(-2);h2=`Look at three numbers in a row: ${a[0]}, ${a[1]}, ${a[2]}. How can the first two make the third?`;h3=`Each number is the sum of the two before it. ${a.at(-2)} + ${a.at(-1)} = ?`;}
+ else{a=[ri(2,4)];while(a.length<5)a.push(a.at(-1)*3-1);n=a.at(-1)*3-1;h2=`Try multiplying: ${a[0]} × 3 = ${a[0]*3}. How far is that from ${a[1]}?`;h3=`Rule: × 3, then − 1. ${a.at(-1)} × 3 = ${a.at(-1)*3}, then − 1 = ?`;}
+ return {clue:seqHtml(a.concat('?')),prompt:'What number comes next in the pattern?',ans:String(n),hints:['Look at how each number turns into the next. Write the jump between each pair.',h2,h3]};}};
+const THEMES={lab:{thing:'crystals',box:'crates',crew:'robots',place:'lab machine'},pirate:{thing:'gold coins',box:'chests',crew:'pirates',place:'ship'},space:{thing:'energy cells',box:'pods',crew:'astronauts',place:'station'},museum:{thing:'gems',box:'cases',crew:'guards',place:'gallery'},school:{thing:'markers',box:'boxes',crew:'teams',place:'classroom'}};
+GEN.word={topic:'word',make(D,o){const T=THEMES[o.theme||'lab'];let q,v,h2,h3;
+ if(D==1){let B,N,U,K;do{B=ri(4,9);N=ri(12,36);K=ri(3,8);U=ri(10,60);}while((B*N-U)%K||B*N-U<=K*5);v=(B*N-U)/K;
+  q=`There are <b>${B} ${T.box}</b> with <b>${N} ${T.thing}</b> in each. <b>${U}</b> ${T.thing} are used to fix the ${T.place}. The rest are shared equally by <b>${K} ${T.crew}</b>. How many does each get?`;
+  h2=`Step 1: total ${T.thing}. ${stack([N,B],'×',{res:'?'})}`;h3=`${B} × ${N} = ${B*N}. Take away ${U}: ${B*N} − ${U} = ${B*N-U}. Last: ${B*N-U} ÷ ${K} = ?`;}
+ else if(D==2){let X,Dd,S,G;do{X=ri(23,68);Dd=ri(6,14);S=ri(40,180);G=ri(6,12);}while((X*Dd-S)%G||X*Dd-S<G*8);v=(X*Dd-S)/G;
+  q=`A team of ${T.crew} collects <b>${X} ${T.thing}</b> every day for <b>${Dd} days</b>. They spend <b>${S}</b> on upgrades and pack the rest into bags of <b>${G}</b>. How many full bags?`;
+  h2=`Step 1: how many collected? ${stack([X,Dd],'×',{res:'?'})}`;h3=`${X} × ${Dd} = ${X*Dd}. Minus ${S} = ${X*Dd-S}. Then ${X*Dd-S} ÷ ${G} = ?`;}
+ else{let a,b,m,t,Tt;a=ri(6,15);b=ri(5,14);m=ri(4,12);t=ri(6,20);Tt=a*m+(a+b)*t;v=t;
+  q=`Machine A makes <b>${a} ${T.thing}</b> each minute. Machine B makes <b>${b}</b> each minute. A runs alone for <b>${m} minutes</b>, then B joins in. How many minutes after B starts will there be <b>${Tt}</b> ${T.thing} in total?`;
+  h2=`First find what A made alone: ${a} × ${m} = ${a*m}. How many more are needed to reach ${Tt}?`;h3=`${Tt} − ${a*m} = ${Tt-a*m}. Together they make ${a} + ${b} = ${a+b} each minute. ${Tt-a*m} ÷ ${a+b} = ?`;}
+ return {clue:`<p class="wp">${q}</p>`,prompt:'Solve the word problem.',ans:String(v),hints:['Break it into steps. What do you need to find first?',h2,h3]};}};
+GEN.frac={topic:'frac',make(D,o){const T=THEMES[o.theme||'lab'];const u=o.unit||'liters',what=o.what||'tank';let q,v,h2,h3;
+ const F=[[1,2],[1,3],[2,3],[1,4],[3,4],[2,5],[3,5],[1,6],[5,6]];
+ if(D==1){const [n1,d1]=pick(F),[n2,d2]=pick(F.filter(f=>f[1]!=d1));const Tt=d1*d2*ri(2,6);const a=Tt-Tt*n1/d1,b=a*n2/d2;v=a-b;
+  q=`A full ${what} holds <b>${Tt} ${u}</b>. On Monday ${fr(n1,d1)} of it was used. On Tuesday ${fr(n2,d2)} of <b>what was left</b> was used. How many ${u} are left now?`;
+  h2=`Monday: ${fr(n1,d1)} of ${Tt} = ${Tt} ÷ ${d1} × ${n1} = ${Tt*n1/d1}. So ${a} ${u} are left after Monday.`;h3=`Tuesday uses ${fr(n2,d2)} of ${a} = ${b}. Left: ${a} − ${b} = ?`;}
+ else if(D==2){const [n1,d1]=pick(F),[n2,d2]=pick(F.filter(f=>f[1]!=d1));const left=(d1-n1)*(d2-n2)*ri(2,5);const Tt=left*d1*d2/((d1-n1)*(d2-n2));v=Tt;
+  q=`Some ${u} were in a full ${what}. ${fr(n1,d1)} of it was used. Then ${fr(n2,d2)} of <b>what was left</b> was used. Now <b>${left} ${u}</b> remain. How many ${u} were in the full ${what}?`;
+  h2=`Work backwards. After the second step, ${fr(d2-n2,d2)} of the leftover remains, and that is ${left}. So the leftover was ${left} ÷ ${d2-n2} × ${d2} = ${left*d2/(d2-n2)}.`;h3=`That ${left*d2/(d2-n2)} is ${fr(d1-n1,d1)} of the full ${what}. ${left*d2/(d2-n2)} ÷ ${d1-n1} × ${d1} = ?`;}
+ else{let w1,n1,w2,n2,k,tot;do{w1=ri(1,4);n1=pick([1,3]);w2=ri(1,4);n2=pick([1,3,5,7]);k=pick([3,5,7]);tot=(w1*8+n1*2)+(w2*8+n2);}while(tot%k);v=tot/k;
+  q=`One rope is ${mx(w1,n1,4)} m long and another is ${mx(w2,n2,8)} m long. They are tied end to end (no rope lost), then cut into pieces that are each ${fr(k,8)} m long. How many pieces?`;
+  h2=`Change everything to eighths: ${mx(w1,n1,4)} = ${fr(w1*8+n1*2,8)} and ${mx(w2,n2,8)} = ${fr(w2*8+n2,8)}.`;h3=`Total = ${fr(tot,8)}. How many groups of ${fr(k,8)} fit in ${fr(tot,8)}? That is ${tot} ÷ ${k} = ?`;}
+ return {clue:`<p class="wp">${q}</p>`,prompt:'Solve the fraction problem.',ans:String(v),hints:['Draw a quick bar in your head. "Of what was left" means the second fraction is of a smaller amount.',h2,h3]};}};
+GEN.dec={topic:'dec',make(D,o){const items=o.items||['Glow paint','Robot arm','Wire spool','Magnet set'];let rows=[],tot=0,q,v,h2,h3;const nItems=D==1?3:4;
+ const its=shuf(items).slice(0,nItems);
+ its.forEach((nm,i)=>{const p=i==0&&D>1?ri(10,40)+pick([0.5,0.25,0.75]):ri(1,24)+ri(1,99)/100;const qn=D>1&&i==1?ri(2,3):1;tot+=p*qn;rows.push([qn>1?`${nm} (${qn} × $${m2(p)})`:nm,qn>1?'':'$'+m2(p),'',p,qn]);});
+ tot=Math.round(tot*100)/100;
+ if(D<3){const pay=Math.ceil((tot+1)/10)*10+(D==2?10:0);v=Math.round((pay-tot)*100)/100;
+  q=`The order is paid with <b>$${pay}.00</b>. How much change comes back? (dollars and cents, like 4.75)`;
+  const ln=rows.map(r=>m2(r[3]*r[4]));h2=`First find each line, then add them in a column, lining up the decimal points: ${stack(ln,'+',{res:'?'})}`;h3=`The total is $${m2(tot)}. Change: ${stack([m2(pay),m2(tot)],'−',{res:'?'})}`;}
+ else{let ppl=3;let t2=tot;while(Math.round(t2*100)%3)t2+=0.01;t2=Math.round(t2*100)/100;rows.push(['Tip','$'+m2(t2-tot),'',t2-tot,1]);tot=t2;v=Math.round(tot/3*100)/100;
+  q=`Three friends split the whole bill <b>equally</b>. How much does each friend pay?`;const ln=rows.map(r=>m2(r[3]*r[4]));h2=`Add every line, lining up decimal points: ${stack(ln,'+',{res:'?'})}`;h3=`The total is $${m2(tot)}. Now ${m2(tot)} ÷ 3 = ? (Split the dollars, then the cents.)`;}
+ const disp=rows.map(r=>[r[0],r[4]>1?'$ ? ':'$'+m2(r[3])]);
+ return {clue:receipt(o.title||'RECEIPT',disp,q),prompt:'Read the receipt carefully.',ans:m2(v),num:true,hints:['Do it in steps: find each line cost, add them up, then answer the question.',h2,h3]};}};
+GEN.lcm={topic:'fpm',make(D,o){const P=D==1?[2,3,4,5,6,8,10]:D==2?[4,6,8,9,10,12,15]:[6,8,9,10,12,14,15,16,18];let a,b,c,L;do{[a,b,c]=shuf(P).slice(0,3).sort((x,y)=>x-y);L=lcm(lcm(a,b),c);}while(L<24||L>(D==1?120:360)||L==a*b*c&&D>1);
+ const f=n=>{let r=[],x=n;for(let p=2;x>1;p++)while(x%p==0){r.push(p);x/=p;}return r.join(' × ');};const thing=o.thing||'lights';
+ return {clue:`<p class="wp">Three ${thing} flash together right now. One flashes every <b>${a}</b> seconds, one every <b>${b}</b>, and one every <b>${c}</b>.</p><p class="wp">In how many seconds will all three flash together <b>again</b>?</p>`,prompt:'When do they all line up again?',ans:String(L),
+  hints:['You need the smallest number that all three numbers go into evenly (the least common multiple).',`Count by the biggest number: ${c}, ${2*c}, ${3*c}, ${4*c}... Check each one: can ${a} and ${b} both divide it?`,`Break them into primes: ${a} = ${f(a)}, ${b} = ${f(b)}, ${c} = ${f(c)}. Use the most of each prime that shows up in any one of them, and multiply.`]};}};
+GEN.gcf={topic:'fpm',make(D,o){const T=THEMES[o.theme||'lab'];let g,x,y;do{g=ri(D==1?4:6,D==1?9:16);x=ri(2,9);y=ri(2,9);}while(gcd(x,y)!=1||x==y);const A=g*x,B=g*y;
+ const ask=D==1?'What is the <b>greatest number of bags</b> you can make?':'Make the greatest number of bags. How many items are in <b>each bag</b>?';
+ return {clue:`<p class="wp">You have <b>${A} red ${T.thing}</b> and <b>${B} blue ${T.thing}</b>. You pack them into identical bags. Every bag must match exactly, and nothing can be left over.</p><p class="wp">${ask}</p>`,prompt:'Pack the bags.',ans:String(D==1?g:x+y),
+  hints:['The number of bags must divide both amounts evenly. You want the greatest common factor.',`List factors of ${A} and ${B}. Which is the biggest one they share?`,D==1?`Try dividing both by ${g}: ${A} ÷ ${g} = ${x}, ${B} ÷ ${g} = ${y}. Can any bigger number divide both?`:`The greatest common factor is ${g}, so you make ${g} bags. Each bag gets ${A} ÷ ${g} = ${x} red and ${B} ÷ ${g} = ${y} blue. Total in one bag = ?`]};}};
+GEN.prime={topic:'fpm',make(D){const pr=[],cp=[];const lo=D==1?2:11,hi=D==1?40:D==2?70:99;for(let i=lo;i<=hi;i++)(isPrime(i)?pr:cp).push(i);const trick=[21,27,33,39,49,51,57,63,69,77,87,91,93].filter(n=>n<=hi);
+ const P=shuf(pr).slice(0,D==1?3:4),C=shuf(trick.length>2?trick.concat(shuf(cp).slice(0,2)):cp).slice(0,8-P.length);const all=shuf(P.concat(C));const s=P.reduce((a,b)=>a+b,0);
+ return {clue:`<p class="wp">Only the <b>prime</b> numbers glow. Add up the glowing numbers.</p>${seqHtml(all)}`,prompt:'Add the prime numbers.',ans:String(s),
+  hints:['A prime number has exactly two factors: 1 and itself.',`Watch out for tricky ones! ${C.filter(n=>n%2).slice(0,2).map(n=>{for(let p=3;p<n;p+=2)if(n%p==0)return n+' = '+p+' × '+(n/p);return n;}).join(', ')} are NOT prime.`,`The primes are ${P.slice(0,-1).join(', ')} and one more. Find it, then add them all.`]};}};
+GEN.area={topic:'geo',make(D,o){const u=o.unit||'m';let W,H,top,right,v,pond=0,h2,h3;do{W=ri(D==1?6:9,D==1?12:20);H=ri(D==1?5:8,D==1?10:16);top=ri(2,W-2);right=ri(2,H-2);}while(W-top<2||H-right<2);
+ const cw=W-top,ch=H-right;v=W*H-cw*ch;if(D==3){pond=ri(2,Math.min(top,right)-0>2?Math.min(top,right,5):2);v-=pond*pond;}
+ h2=`Think of the full rectangle ${W} × ${H}, with a corner cut out. The cut-out corner is ${W} − ${top} = ${cw} wide and ${H} − ${right} = ${ch} tall.`;
+ h3=`Full rectangle: ${W} × ${H} = ${W*H}. Corner: ${cw} × ${ch} = ${cw*ch}. ${W*H} − ${cw*ch}${pond?` − ${pond*pond} (the ${pond} × ${pond} pool)`:''} = ?`;
+ return {clue:`<div class="ctr">${lshapeSvg(W,H,top,right,u,pond)}</div><p class="wp">What is the <b>area</b> of the floor${pond?' <b>not</b> covered by the square pool':''}? (square ${u})</p>${pond?`<p class="wp">The pool is ${pond} ${u} by ${pond} ${u}.</p>`:''}`,prompt:'Find the floor area.',ans:String(v),hints:['Split the shape into rectangles, or find the big rectangle and subtract the missing corner. Some sides are not labeled. Find them first.',h2,h3]};}};
+GEN.volume={topic:'geo',make(D,o){const u=o.unit||'cm';let l,w,h,v,q,h2,h3;
+ if(D==1){l=ri(4,12);w=ri(3,9);h=ri(2,8);v=l*w*h;q=`What is the <b>volume</b> of the box in cubic ${u}?`;h2=`Volume = length × width × height. Start with the bottom layer: ${l} × ${w} = ${l*w} cubes.`;h3=`There are ${h} layers of ${l*w}. ${stack([l*w,h],'×',{res:'?'})}`;}
+ else if(D==2){l=2*ri(3,8);w=2*ri(2,6);h=2*ri(2,5);v=(l/2)*(w/2)*(h/2);q=`How many <b>2 ${u} × 2 ${u} × 2 ${u}</b> cubes fit inside the box exactly?`;h2=`Count how many cubes fit along each edge: ${l} ÷ 2 = ${l/2}, ${w} ÷ 2 = ${w/2}, ${h} ÷ 2 = ${h/2}.`;h3=`Multiply the cubes along each edge: ${l/2} × ${w/2} × ${h/2} = ?`;}
+ else{l=ri(6,12);w=ri(3,7);h=ri(3,6);const l2=ri(2,l-2),h2b=ri(2,5);v=l*w*h+l2*w*h2b;q=`A second box, <b>${l2} × ${w} × ${h2b} ${u}</b>, is glued on top. What is the <b>total volume</b> of both boxes in cubic ${u}?`;h2=`Find each box's volume separately, then add. Big box: ${l} × ${w} × ${h}.`;h3=`Big box = ${l*w*h}. Small box = ${l2} × ${w} × ${h2b} = ${l2*w*h2b}. ${stack([l*w*h,l2*w*h2b],'+',{res:'?'})}`;}
+ return {clue:`<div class="ctr">${boxSvg(l,w,h,u)}</div><p class="wp">${q}</p>`,prompt:'Find the volume.',ans:String(v),hints:['Volume counts the cubes that fill a box: length × width × height.',h2,h3]};}};
+GEN.elapsed={topic:'time',make(D){let sh,sm,eh,em,brk=0;sh=ri(7,10);sm=ri(5,55);const dur=D==1?ri(70,170):ri(150,330);const end=sh*60+sm+dur;eh=Math.floor(end/60);em=end%60;if(D==3)brk=ri(15,45);const v=dur-brk;
+ const nh=(sh+1)*60-(sh*60+sm);
+ return {clue:`<div class="clocks"><div><small>Started</small><b class="mono">${tm(sh,sm)}</b></div><div><small>Finished</small><b class="mono">${tm(eh,em)}</b></div></div><p class="wp">How many <b>minutes</b> passed from start to finish${brk?`, <b>not counting</b> a ${brk}-minute snack break`:''}?</p>`,prompt:'Find the elapsed time in minutes.',ans:String(v),
+  hints:['Jump to the next full hour first, then count whole hours, then the extra minutes.',`From ${tm(sh,sm)} to ${tm(sh+1,0)} is ${nh} minutes. Then count hours up to ${tm(eh,0)}.`,`${nh} min + ${eh-sh-1} hours (${(eh-sh-1)*60} min) + ${em} min${brk?` − ${brk} min break`:''} = ?`]};}};
+GEN.coord={topic:'coord',make(D){let x1,y1,x2,y2;do{x1=ri(1,4);y1=ri(1,4);x2=ri(x1+2,10);y2=ri(y1+2,10);}while(x2>10||y2>10);const w=x2-x1,h=y2-y1;
+ const pts=[[x1,y1],[x1,y2],[x2,y2]];const v=D==1?w*h:D==2?w*h/2:2*(w+h);if(D==2&&(w*h)%2)return GEN.coord.make(D);
+ const what=D==1?'the <b>area</b> of the rectangle (in square units)':D==2?'the <b>area</b> of the triangle with these three corners':'the <b>perimeter</b> of the rectangle';
+ return {clue:`<p class="wp">Three corners of a rectangle are at <b>(${pts[0]})</b>, <b>(${pts[1]})</b> and <b>(${pts[2]})</b>.</p><div class="ctr">${gridSvg(10,[],{w:220})}</div><p class="wp">Find ${what}.</p>`,prompt:'Use the coordinate grid.',ans:String(v),
+  hints:['Plot the points. Remember (x, y): go across first, then up.',`The side lengths come from subtracting: across ${x2} − ${x1} = ${w}, up ${y2} − ${y1} = ${h}.`,D==1?`Area = ${w} × ${h} = ?`:D==2?`The triangle is half of the ${w} × ${h} rectangle: ${w*h} ÷ 2 = ?`:`Perimeter = ${w} + ${h} + ${w} + ${h} = ?`]};}};
+GEN.stretch={topic:'stretch',make(D,o){const t=pick(['pct','ratio','eq','temp','pow']);let c,v,h1,h2,h3;
+ if(t=='pct'){const P=pick([40,60,80,120,160,200]),d=pick([10,20,25,30]),tax=pick([5,10]);const s=P*(100-d)/100;v=m2(s*(100+tax)/100);c=`A jacket costs <b>$${P}</b>. It is on sale for <b>${d}% off</b>. Then <b>${tax}% tax</b> is added to the sale price. What is the final price?`;h2=`${d}% of $${P} = $${P*d/100}. Sale price = $${s}.`;h3=`${tax}% of $${s} = $${m2(s*tax/100)}. ${stack([m2(s),m2(s*tax/100)],'+',{res:'?'})}`;}
+ else if(t=='ratio'){const a=ri(2,5),b=ri(a+1,9),k=ri(4,12);if(gcd(a,b)!=1)return GEN.stretch.make(D,o);v=b*k;c=`The ratio of red blocks to blue blocks is <b>${a} : ${b}</b>. There are <b>${(a+b)*k}</b> blocks in all. How many are <b>blue</b>?`;h2=`Each "group" has ${a} + ${b} = ${a+b} blocks.`;h3=`${(a+b)*k} ÷ ${a+b} = ${k} groups. Blue = ${b} × ${k} = ?`;}
+ else if(t=='eq'){const a=ri(3,9),x=ri(4,15),b=ri(5,30);v=x;c=`I think of a number. I multiply it by <b>${a}</b>, then add <b>${b}</b>. I get <b>${a*x+b}</b>. What is my number? <span class="mono">(${a}n + ${b} = ${a*x+b})</span>`;h2=`Undo the steps backwards: first undo "+ ${b}".`;h3=`${a*x+b} − ${b} = ${a*x}. Then undo "× ${a}": ${a*x} ÷ ${a} = ?`;}
+ else if(t=='temp'){const s=-ri(4,12),r=ri(2,4),hrs=ri(5,9);v=s+r*hrs;if(v<=0)return GEN.stretch.make(D,o);c=`At 6 AM it is <b>${s}°C</b> (below zero!). It warms up <b>${r}°</b> every hour. What is the temperature after <b>${hrs} hours</b>?`;h2=`Total warming: ${r} × ${hrs} = ${r*hrs} degrees.`;h3=`Start at ${s} and go up ${r*hrs}. From ${s} to 0 is ${-s} degrees, then ${r*hrs-(-s)} more = ?`;}
+ else{const a=ri(2,3),e1=a==2?ri(4,6):3,b=ri(3,4),e2=b==4?2:3,cc=ri(2,5);v=a**e1+b**e2-cc*cc;c=`<span class="big mono">${a}<sup>${e1}</sup> + ${b}<sup>${e2}</sup> − ${cc}<sup>2</sup></span>`;h2=`A power means repeated multiplying: ${a}<sup>${e1}</sup> = ${Array(e1).fill(a).join(' × ')}.`;h3=`${a**e1} + ${b**e2} − ${cc*cc} = ?`;}
+ return {clue:`<p class="wp">${c}</p>`,prompt:'Stretch puzzle (middle school level).',ans:String(v),num:t=='pct',hints:['Go step by step. Write down each in-between answer in your notes.',h2,h3]};}};
+function mkGen(ids,D,o={},topics){// choose first enabled generator; respect answer range
+ let list=ids.filter(id=>!topics||topics[GEN[id].topic]!==false);if(!list.length){const alt=Object.keys(GEN).filter(id=>id!='stretch'&&(!topics||topics[GEN[id].topic]!==false));list=alt.length?[pick(alt)]:[ids[0]];}
+ const id=o.pickRandom?pick(list):list[0];let r;for(let i=0;i<300;i++){r=GEN[id].make(D,o);const n=parseFloat(r.ans);if((o.min===undefined||n>=o.min)&&(o.max===undefined||n<=o.max)&&!(o.int&&n%1))break;}
+ r.topic=GEN[id].topic;r.gen=id;return r;}
+// ===== special generators =====
+function cipherProblem(t,D){// returns expression string whose value is t (1..26)
+ for(let k=0;k<200;k++){const ty=pick(D==1?['mul','mulm','add']:D==2?['mul','mulm','par','div']:['par','div','sq','prime']);
+  if(ty=='mul'){const a=ri(2,6),b=Math.floor(t/a),c=t-a*b;if(b<2)continue;return c?`${a} × ${b} + ${c}`:`${a} × ${b}`;}
+  if(ty=='mulm'){const a=ri(2,7),b=Math.ceil(t/a)+ri(0,1),c=a*b-t;if(b<2||c<=0)continue;return `${a} × ${b} − ${c}`;}
+  if(ty=='add'){const a=ri(1,t-1);if(t<4)continue;return `${a} + ${t-a}`;}
+  if(ty=='par'){const c=ri(2,4),s=Math.ceil(t/c)+ri(0,2),d=s*c-t;if(d<0||s<3)continue;const a=ri(1,s-1);return `(${a} + ${s-a}) × ${c}${d?' − '+d:''}`;}
+  if(ty=='div'){const d=ri(3,9);return `${t*d} ÷ ${d}`;}
+  if(ty=='sq'){const r=Math.ceil(Math.sqrt(t)),c=r*r-t;if(r<3)continue;return c?`${r}² − ${c}`:`${r}²`;}
+  if(ty=='prime'){const pr=[2,3,5,7,11,13,17,19,23];const i=pr.indexOf(t);if(i<0)continue;return `the ${['1st','2nd','3rd','4th','5th','6th','7th','8th','9th'][i]} prime`;}}
+ return `${t}`;}
+function cipherPuzzle(words,D){const w=pick(words);const rows=[...w].map((ch,i)=>({e:cipherProblem(LET.indexOf(ch)+1,D),ch}));
+ const key=`<div class="abc">${[...LET].map((c,i)=>`<span><b>${c}</b>${i+1}</span>`).join('')}</div>`;
+ return {word:w,clue:`<p class="wp">Solve each one. Turn each answer into a letter (A = 1, B = 2 ... Z = 26).</p><ol class="cph">${rows.map(r=>`<li><span class="mono">${r.e}</span> → <b>?</b></li>`).join('')}</ol>${key}`,
+  hints:['Solve the first problem, then find that number in the A–Z strip.',`The first one: ${rows[0].e} = ${LET.indexOf(rows[0].ch)+1}, which is the letter ${rows[0].ch}.`,`The first ${w.length-1} letters are ${w.slice(0,-1).split('').join(', ')}. Solve the last one to finish the word.`]};}
+const COLORS={red:{c:'#ff4d4d',s:'●',n:'Red'},blue:{c:'#3d8bff',s:'■',n:'Blue'},green:{c:'#35c46a',s:'▲',n:'Green'},yellow:{c:'#ffd23f',s:'★',n:'Yellow'},purple:{c:'#a66bff',s:'◆',n:'Purple'},orange:{c:'#ff9a2e',s:'⬟',n:'Orange'}};
+const chip=k=>`<span class="cchip" style="--c:${COLORS[k].c}">${COLORS[k].s} ${COLORS[k].n}</span>`;
+function fracOrder(D,cols){// returns items [{col,html,val}] and answer order
+ const pool=D==1?[[1,2],[1,4],[3,4],[3,8],[5,8],[7,8],[1,8]]:D==2?[[2,3],[3,4],[5,6],[7,12],[5,8],[1,2],[2,5],[3,5]]:[[7,8],[0.8],[5,6],[0.75],[9,10],[0.85],[2,3],[0.6],[11,12]];
+ let it;do{it=shuf(pool).slice(0,cols.length).map((f,i)=>({col:cols[i],val:f.length==1?f[0]:f[0]/f[1],html:f.length==1?`<span class="mono">${f[0]}</span>`:fr(f[0],f[1])}));}while(new Set(it.map(x=>x.val.toFixed(4))).size<it.length);
+ const order=it.slice().sort((a,b)=>a.val-b.val).map(x=>x.col);return {it,order};}
+function logicGrid(names,cols){// unique-solution puzzle by brute force
+ const n=names.length;const perms=(a)=>a.length<=1?[a]:a.flatMap((x,i)=>perms(a.slice(0,i).concat(a.slice(i+1))).map(p=>[x].concat(p)));const P=perms(cols);
+ for(let tries=0;tries<50;tries++){const sol=shuf(cols);const pos=c=>sol.indexOf(c);const cl=[];
+  const mk=()=>{const t=pick(['not','not','or','next','before']);const i=ri(0,n-1);
+   if(t=='not'){const c=pick(cols.filter(x=>x!=sol[i]));return {t:`<b>${names[i]}</b> is not wearing ${chip(c)}.`,f:s=>s[i]!=c};}
+   if(t=='or'){const c=pick(cols.filter(x=>x!=sol[i]));const pair=shuf([sol[i],c]);return {t:`<b>${names[i]}</b> wears ${chip(pair[0])} or ${chip(pair[1])}.`,f:s=>s[i]==pair[0]||s[i]==pair[1]};}
+   if(t=='next'){const j=i+(i<n-1&&(i==0||RNG()<.5)?1:-1);const c=sol[j];return {t:`The ${chip(c)} suit sits right next to <b>${names[i]}</b>.`,f:s=>Math.abs(s.indexOf(c)-i)==1};}
+   const a=ri(0,n-2),b=ri(a+1,n-1);return {t:`${chip(sol[a])} is in a lower seat number than ${chip(sol[b])}.`,f:s=>s.indexOf(sol[a])<s.indexOf(sol[b])};};
+  for(let k=0;k<30;k++){const c=mk();cl.push(c);const ok=P.filter(p=>cl.every(x=>x.f(p)));if(ok.length==1)break;}
+  if(P.filter(p=>cl.every(x=>x.f(p))).length!=1)continue;
+  for(let k=cl.length-1;k>=0;k--){const t=cl.slice(0,k).concat(cl.slice(k+1));if(P.filter(p=>t.every(x=>x.f(p))).length==1)cl.splice(k,1);}
+  if(cl.length<3||cl.length>n+3)continue;
+  // hint helpers
+  const firstPin=(()=>{for(let i=0;i<n;i++){const can=new Set(P.filter(p=>cl.every(x=>x.f(p))).map(p=>p[i]));}return null;})();
+  return {sol,clues:shuf(cl).map(c=>c.t)};}
+ return null;}
+function route(D){// axis-aligned robot route on 0..10 grid; returns legs + arrows
+ let p=[ri(1,9),ri(1,9)];const pts=[p.slice()],ans=[];const legs=D==1?4:5;let ax=ri(0,1);
+ for(let i=0;i<legs;i++){let v;do{v=ri(0,10);}while(Math.abs(v-p[ax])<2);ans.push(ax==0?(v>p[0]?'R':'L'):(v>p[1]?'U':'D'));p[ax]=v;pts.push(p.slice());ax=1-ax;}
+ const ex=v=>{if(D==1)return v;const t=pick(['m','d','s']);if(v==0)return '5 − 5';if(t=='m'&&v>3&&!isPrime(v)){for(let a=2;a<v;a++)if(v%a==0&&a>1&&v/a>1)return `${a}×${v/a}`;}if(t=='d')return `${v*3}÷3`;const a=ri(1,6);return `${v+a}−${a}`;};
+ return {pts,ans,list:pts.map((q,i)=>i==0?`<b>Start</b> (${q[0]}, ${q[1]})`:`(${ex(q[0])}, ${ex(q[1])})`)};}
+function laserMaze(D){const N=5;const k=D==1?pick([3,4,5]):D==2?pick([6,7,8]):0;
+ for(let t=0;t<500;t++){const path=[[0,0]];const used=new Set(['0,0']);let ok=false;
+  const adj=(r,c)=>[[r-1,c],[r+1,c],[r,c-1],[r,c+1]].filter(([a,b])=>a>=0&&b>=0&&a<N&&b<N);
+  for(let s=0;s<14;s++){const [r,c]=path.at(-1);if(r==N-1&&c==N-1){ok=true;break;}
+   const opts=adj(r,c).filter(([a,b])=>!used.has(a+','+b)&&adj(a,b).every(([x,y])=>(x==r&&y==c)||!used.has(x+','+y)));if(!opts.length)break;
+   const w=opts.map(([a,b])=>({a,b,wt:(a>r||b>c)?3:1}));let tot=w.reduce((s,x)=>s+x.wt,0),u=RNG()*tot,ch=w[0];for(const x of w){u-=x.wt;if(u<=0){ch=x;break;}}
+   path.push([ch.a,ch.b]);used.add(ch.a+','+ch.b);}
+  if(!ok||path.length<9||path.length>13)continue;
+  const g=[];for(let r=0;r<N;r++){g.push([]);for(let c=0;c<N;c++){let v;if(used.has(r+','+c)){v=k?k*ri(2,12):pick([2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53,59,61,67,71,73,79,83,89,97]);}else{do{v=k?ri(k+1,k*12):pick([1,9,15,21,25,27,33,35,39,45,49,51,55,57,63,65,69,77,81,85,87,91,93,95]);}while(k&&v%k==0);}g[r].push(v);}}
+  const ans=[];for(let i=1;i<path.length;i++){const [a,b]=path[i-1],[c,d]=path[i];ans.push(c>a?'D':c<a?'U':d>b?'R':'L');}
+  return {g,ans,k,path};}
+ return null;}
+
+// ===== ROOMS =====
+const O=(id,name,icon,x,y,w,h,col,ex={})=>Object.assign({id,name,icon,x,y,w,h,col},ex);
+const dirTxt=a=>a.map(d=>({U:'↑',D:'↓',L:'←',R:'→'}[d])).join(' ');
+const ROOMS=[
+{id:'lab',blurb:'Order of operations · robot route · invisible ink · secret code',name:'Blocky Lab',icon:'🧪',sub:'Warm-up room',mins:'8–10',level:1,theme:'lab',
+ build(D,T){const g1=mkGen(['ooo','pattern','word'],D,{theme:'lab',int:true},T);
+  const rt=route(D);const g3=mkGen(['pattern','prime','lcm','word'],D,{min:100,max:999,int:true},T);
+  const cp=cipherPuzzle(['GLOW','ATOM','CUBE','VOLT','GEAR','BOLT','LAMP','CODE','BYTE','FUSE','WIRE','ZOOM'],D);
+  const cols=['red','blue','green','yellow'];const dg=shuf([1,2,3,4,5,6,7,8,9]).slice(0,4);const pc={};cols.forEach((c,i)=>pc['p'+c]={label:COLORS[c].n+' tile',col:COLORS[c].c,val:String(dg[i])});
+  const order=shuf(cols);let fake;do{fake=shuf(cols);}while(fake.join()==order.join());const code=order.map(c=>pc['p'+c].val).join('');
+  return {intro:'The lab door slammed shut! Search the lab, crack 4 locks and find the 4-digit exit code.',
+  objects:[
+   O('board','Whiteboard','📋',3,6,27,30,'#f4f7fb',{clue:`<p>Scribbled on the whiteboard:</p>${g1.clue}<p class="note">PC password = the answer!</p>`}),
+   O('poster','Grid Poster','🗺️',33,6,16,28,'#ffe9a8',{clue:`<p><b>ROBOT TEST GRID</b>. Remember: x goes across, y goes <b>up</b>.</p><div class="ctr">${gridSvg(10,[],{w:240})}</div>`}),
+   O('beakers','Beaker Shelf','⚗️',53,8,20,20,'#bfefff',{gate:[{item:'uv'}],pre:'<p>Rows of beakers with blank labels. Lab rumor says scientists write secret notes in <b>invisible ink</b>.</p>',clue:`<p>Glowing purple writing appears on the labels!</p>${g3.clue}<p class="note">FRIDGE CODE = the answer. Put it on the 3 dials.</p>`}),
+   O('door','Exit Door','🚪',83,8,15,64,'#c0392b',{kind:'door',gate:[{lock:'exit'}],pre:'<p>A heavy lab door with a 4-digit keypad. A sign: <i>"Exit code = your 4 colored tiles in the right order."</i></p>'}),
+   O('desk','Desk Drawer','🗄️',3,62,30,28,'#9b6b43',{gate:[{lock:'drawer'}],pre:'<p>The desk drawer has a <b>4-letter word lock</b>.</p>',gives:['note2'],clue:'<p>Inside the drawer: half of a torn note!</p>'}),
+   O('pc','Lab Computer','🖥️',8,40,17,21,'#3b4a63',{gate:[{lock:'pc'}],pre:'<p>The screen says: <b>ENTER PASSWORD</b> (numbers only). There is a keypad.</p>',clue:`<div class="scr"><p><b>ROBOT ROUTE LOG</b></p><ol>${rt.list.map(x=>`<li>${x}</li>`).join('')}</ol><p>The supply cabinet opens with arrows: one arrow for each straight move.</p></div>`}),
+   O('book','Lab Notebook','📓',25,50,9,11,'#6ad1a3',{clue:`<p><b>LAB NOTEBOOK</b>: "Drawer word, in secret code:"</p>${cp.clue}`}),
+   O('fridge','Sample Fridge','🧊',37,38,14,50,'#dfe8f0',{gate:[{lock:'fridge'}],pre:'<p>A fridge with a <b>3-dial combination lock</b>. The label says "Code is on the beaker shelf."</p>',gives:['note1'],clue:'<p>Behind the ice samples: half of a torn note!</p>'}),
+   O('cab','Supply Cabinet','🧰',56,42,18,46,'#5c7cfa',{gate:[{lock:'cab'}],pre:'<p>The cabinet has a <b>direction lock</b> (↑ ↓ ← →).</p>',gives:['uv'],clue:'<p>Inside: a <b>UV flashlight</b>! It makes invisible ink glow.</p>'}),
+   O('trash','Trash Can','🗑️',75,74,7,14,'#7f8c8d',{kind:'trap',clue:`<p>A crumpled note:</p><div class="note">Exit rule: ${fake.map(chip).join(' ')}<br><i>(from LAST YEAR's lab. Rules change!)</i></div>`}),
+   O('plant','Lab Plant','🪴',50,74,6,14,'#2ecc71',{kind:'decor',clue:'<p>A plant with goggles on. Nothing useful here!</p>'})],
+  locks:{
+   pc:{type:'keypad',title:'Computer Password',prompt:'Type the password. The whiteboard has it.',ans:g1.ans,num:g1.num,hints:g1.hints,topic:g1.topic,piece:'pred',clueFrom:'board'},
+   cab:{type:'dir',title:'Cabinet Direction Lock',prompt:'Enter one arrow for each straight move of the robot route. (y goes up!)',ans:rt.ans.join(''),len:rt.ans.length,topic:'coord',piece:'pblue',clueFrom:'pc',
+    hints:['Use the route log on the computer. Compare each point with the one before it.',`From the start (${rt.pts[0]}) to (${rt.pts[1]}): did x change or y? Bigger x means →, bigger y means ↑.`,`The first ${rt.ans.length-1} arrows are ${dirTxt(rt.ans.slice(0,-1))}. Work out the last one.`]},
+   fridge:{type:'dial',title:'Fridge Dial Lock',prompt:'Set the 3 dials to the code from the beaker shelf.',ans:g3.ans.padStart(3,'0'),len:3,hints:g3.hints,topic:g3.topic,piece:'pgreen',clueFrom:'beakers'},
+   drawer:{type:'word',title:'Drawer Word Lock',prompt:'Spell the secret word from the lab notebook.',ans:cp.word,len:cp.word.length,hints:cp.hints,topic:'logic',piece:'pyellow',clueFrom:'book'},
+   exit:{type:'keypad',title:'Exit Keypad',prompt:'Enter the 4-digit exit code.',ans:code,hints:['Your 4 colored tiles are the digits. Something tells you their order. Did you put both torn notes together?','Tap 🔧 Combine in your bag, then tap both torn notes. Read the Exit Rule. (The trash note is old!)',`The rule order is ${order.map(c=>COLORS[c].n).join(', ')}. Put each tile's number in that order.`],topic:'logic',clueFrom:'rule'}},
+  items:{uv:{name:'UV Flashlight',icon:'🔦',html:'<p>Shine it on things to reveal invisible ink.</p>'},note1:{name:'Torn note (left)',icon:'📄',html:'<p>"EXIT RU..." The rest is torn off.</p>'},note2:{name:'Torn note (right)',icon:'📃',html:'<p>"...LE" plus some colored dots. Torn on the left.</p>'},
+   rule:{name:'Exit Rule',icon:'📜',html:`<p><b>EXIT RULE</b> (this year): type the tiles in this order:</p><div class="note">${order.map((c,i)=>`${i+1}. ${chip(c)}`).join('<br>')}</div>`}},
+  recipes:[{a:'note1',b:'note2',out:'rule',msg:'The torn edges match! You made the Exit Rule.'}],pieces:pc,
+  goals:[{t:'Crack the computer password',k:'pc'},{t:'Open the supply cabinet',k:'cab'},{t:'Find the invisible ink',done:S=>S.used.beakers,hints:['Something you found makes hidden things glow. Where could secret writing be?','Open the beaker shelf and use the UV flashlight there.','Tap the Beaker Shelf, then tap the 🔦 UV Flashlight button.']},
+   {t:'Open the fridge',k:'fridge'},{t:'Open the desk drawer',k:'drawer'},{t:'Put the torn notes together',done:S=>S.inv.includes('rule'),hints:['Two things in your bag look like they belong together.','Tap 🔧 Combine in your bag.','Combine: tap Torn note (left), then Torn note (right).']},{t:'Unlock the exit door',k:'exit'}],final:'exit'};}},
+{id:'ship',blurb:'Receipt math · fraction flags · voyage clock · coin password',name:'Pirate Ship Hold',icon:'🏴‍☠️',sub:'Fractions, decimals & time',mins:'9–11',level:2,theme:'ship',
+ build(D,T){const g1=mkGen(['dec','word','frac'],D,{theme:'pirate',title:'SHIP SUPPLIES',items:['Rope coil','Sailcloth','Lantern oil','Ship biscuits','Tar bucket','Fishing net'],min:0.01},T);
+  const fcols=['red','blue','green','yellow'];const fo=fracOrder(D,fcols);
+  const g4=mkGen(['frac','word','gcf'],D,{theme:'pirate',unit:'liters',what:'water barrel',int:true},T);
+  // elapsed time voyage
+  let sh=ri(8,10),sm=pick([5,10,15,20,25,35,40,45,50,55]);const legs=[[ri(1,2),pick([15,20,35,40,45,50])],[ri(1,2),pick([10,25,30,35,55])]];if(D==3)legs.push([0,pick([40,45,50,55])]);let stop=D>=2?pick([20,25,30,45]):0;
+  let mins=sh*60+sm+legs.reduce((a,l)=>a+l[0]*60+l[1],0)+stop;const ah=Math.floor(mins/60)%24,am=mins%60;const ah12=ah%12||12;const clockAns=String(ah12).padStart(2,'0')+String(am).padStart(2,'0');
+  const lg=[`Left port at <b>${tm(sh,sm)}</b>.`,`Sailed <b>${legs[0][0]} h ${legs[0][1]} min</b> to Skull Rock.`];if(stop)lg.push(`Stopped <b>${stop} min</b> to fix the sail.`);lg.push(`Sailed <b>${legs[1][0]} h ${legs[1][1]} min</b> to Coral Bay.`);if(legs[2])lg.push(`Sailed <b>${legs[2][1]} min</b> more to Treasure Cove.`);
+  const t1=sh*60+sm+legs[0][0]*60+legs[0][1];
+  const words=D==3?['PEARL','STORM','CORAL','CHEST','CROWN','WAVES']:['GOLD','SAIL','MAST','REEF','KEEL','DECK','HOOK','ROPE','WAVE','PORT'];const w=pick(words);
+  const vp=D==1?[['1',2],['1',4],['3',4],['0.3'],['0.6'],['0.9'],['1',10],['0.45']]:D==2?[['2',3],['3',5],['5',8],['0.7'],['0.45'],['0.55'],['3',4],['1',3],['0.8']]:[['7',8],['0.85'],['5',6],['0.8'],['9',10],['2',3],['0.7'],['11',12],['0.95']];
+  let cv;do{cv=shuf(vp).slice(0,w.length).map(f=>({v:f.length==1?+f[0]:f[0]/f[1],h:f.length==1?f[0]:fr(f[0],f[1])}));}while(new Set(cv.map(c=>c.v.toFixed(4))).size<cv.length);
+  cv.sort((a,b)=>a.v-b.v);const pc={};const coinIds=[];[...w].forEach((ch,i)=>{pc['c'+i]={label:'Coin '+ch,col:'#f5c542',val:cv[i].h,letter:ch};coinIds.push('c'+i);});
+  const cshow=shuf(coinIds);// which coin from which lock (random so order isn't given away)
+  const fake=shuf([...w]).join('');
+  return {intro:'Arr! You are locked in the hold. Find the gold coins and open the captain\'s treasure chest to escape!',
+  objects:[
+   O('manifest','Supply List','📜',3,7,15,27,'#f3e2b3',{clue:`${g1.clue}<p class="note">Rope locker code = the answer!</p>`}),
+   O('port','Porthole','🪟',21,8,14,22,'#7fd3ff',{gate:[{item:'spy'}],pre:'<p>Far away, an island has flags waving... much too far to read. If only you could zoom in!</p>',clue:`<p>Through the spyglass you see four flags with numbers:</p><div class="flags">${fo.it.map(x=>`<div class="flag" style="--c:${COLORS[x.col].c}"><span>${COLORS[x.col].s}</span><b>${x.html}</b></div>`).join('')}</div><p class="note">Flag box: raise the flags from the <b>smallest</b> number to the <b>largest</b>.</p>`}),
+   O('clock','Ship\'s Clock','🕰️',38,7,12,22,'#d9a441',{gate:[{lock:'clock'}],pre:`<p>The ship's clock is stopped. A plate says: <i>"Set me to the time we reached ${legs[2]?'Treasure Cove':'Coral Bay'}."</i> It has 4 dials: HH:MM.</p>`,gives:['mapB'],clue:'<p>The clock face swings open. Inside: half of a treasure map!</p>'}),
+   O('flagbox','Flag Box','🎌',53,8,17,20,'#b5653b',{gate:[{lock:'flags'}],pre:'<p>A locked flag box with four color buttons.</p>',gives:['key'],clue:'<p>Inside the flag box: a <b>brass key</b>.</p>'}),
+   O('parrot','Parrot','🦜',74,5,9,18,'#2ecc71',{kind:'decor',clue:'<p>"SQUAWK! Pieces of eight! Pieces of eight!" The parrot is not much help.</p>'}),
+   O('desk','Captain\'s Desk','🗃️',3,60,26,28,'#8e5a2b',{gate:[{item:'key'}],pre:'<p>The captain\'s desk drawer has a brass keyhole.</p>',gives:['mapA'],clue:`<p>Inside: the <b>captain's logbook</b> and half of a treasure map!</p><div class="note">${lg.join('<br>')}</div>`}),
+   O('barrel','Water Barrel','🛢️',32,52,12,36,'#a0662f',{gate:[{lock:'barrel'}],pre:`<p>A tag on the barrel tap has a puzzle:</p>${g4.clue}<p>The tap has a number keypad.</p>`}),
+   O('locker','Rope Locker','🚪',47,42,14,46,'#6d4c2f',{gate:[{lock:'rope'}],pre:'<p>A rope locker with a number keypad. Scratched on it: "code = answer on the supply list".</p>',gives:['spy'],clue:'<p>Behind the ropes: a <b>spyglass</b>!</p>'}),
+   O('chest','Treasure Chest','💰',68,56,24,32,'#c8902e',{kind:'door',gate:[{lock:'chest'}],pre:`<p>The captain's chest has a <b>${w.length}-letter word lock</b>. The way out is inside!</p>`}),
+   O('note','Soggy Note','📝',30,88,8,10,'#d8d2b8',{kind:'trap',clue:`<p>A soggy note from the <i>old</i> captain:</p><div class="note">Chest word: ${fake}?? ...or was it backwards?</div><p><i>The ink is smudged. Not trustworthy!</i></p>`}),
+   O('ham','Hammock','🧺',86,30,12,16,'#e8d6a8',{kind:'decor',clue:'<p>A comfy hammock. Someone snores in here at night. Nothing useful.</p>'})],
+  locks:{
+   rope:{type:'keypad',title:'Rope Locker Keypad',prompt:'Enter the answer from the supply list.',ans:g1.ans,num:g1.num,hints:g1.hints,topic:g1.topic,piece:cshow[0],clueFrom:'manifest'},
+   flags:{type:'color',title:'Flag Box',prompt:'Raise the 4 flags in order: smallest number first.',ans:fo.order.join(','),len:4,colors:fcols,topic:'frac',piece:cshow[1],clueFrom:'port',
+    hints:['Compare the numbers on the flags. You can change them all to the same kind (decimals, or fractions with the same bottom number).',D==1?'Use eighths: 1/2 = 4/8 and 1/4 = 2/8, 3/4 = 6/8.':D==2?'Try twelfths or twenty-fourths, or think of each as a decimal: 2/3 ≈ 0.67, 3/4 = 0.75, 5/8 = 0.625.':'Turn every fraction into a decimal: 7/8 = 0.875, 5/6 ≈ 0.833, 9/10 = 0.9, 2/3 ≈ 0.667, 11/12 ≈ 0.917.',`Smallest first: ${fo.order.slice(0,3).map(c=>COLORS[c].n).join(', ')}, then the last one.`]},
+   clock:{type:'dial',title:'Ship\'s Clock',prompt:'Set the clock to the arrival time (HH MM). Example: 2:05 → 0 2 0 5.',ans:clockAns,len:4,topic:'time',piece:cshow[2],clueFrom:'desk',sep:2,
+    hints:['Add one part of the voyage at a time. Jump to the next full hour when the minutes go past 60.',`After the first sail the time was ${tm(Math.floor(t1/60),t1%60)}.`,`Keep adding: ${stop?stop+' min stop, then ':''}${legs[1][0]} h ${legs[1][1]} min${legs[2]?', then '+legs[2][1]+' min':''}. The answer is in the ${ah>=12?'afternoon (PM)':'morning (AM)'}.`]},
+   barrel:{type:'keypad',title:'Barrel Tap Keypad',prompt:'Solve the puzzle on the barrel tag.',ans:g4.ans,num:g4.num,hints:g4.hints,topic:g4.topic,piece:cshow[3],pieces2:cshow.slice(4),clueFrom:'barrel'},
+   chest:{type:'word',title:'Chest Word Lock',prompt:`Spell the ${w.length}-letter password.`,ans:w,len:w.length,topic:'frac',clueFrom:'map',
+    hints:['Your gold coins each have a letter and a number. The treasure map explains how to use them.','Put the two map halves together (🔧 Combine). Then line the coins up from least to greatest value.',`From least to greatest, the letters start ${w.slice(0,w.length-1).split('').join(', ')}...`]}},
+  items:{spy:{name:'Spyglass',icon:'🔭',html:'<p>Zooms in on things far away.</p>'},key:{name:'Brass Key',icon:'🗝️',html:'<p>A small brass key with an anchor on it.</p>'},mapA:{name:'Map half (top)',icon:'🗺️',html:'<p>The top half of a treasure map.</p>'},mapB:{name:'Map half (bottom)',icon:'🧭',html:'<p>The bottom half of a treasure map.</p>'},
+   map:{name:'Treasure Map',icon:'🏝️',html:'<p><b>TREASURE MAP</b></p><div class="note">X marks the chest! To open it: line up your gold coins from <b>LEAST</b> value to <b>GREATEST</b>. Read their letters in that order.</div>'}},
+  recipes:[{a:'mapA',b:'mapB',out:'map',msg:'The two halves fit! A full treasure map.'}],pieces:pc,
+  goals:[{t:'Open the rope locker',k:'rope'},{t:'Look far away with the spyglass',done:S=>S.used.port,hints:['A spyglass helps you see far away. What in the room looks outside?','Use the spyglass on the porthole (the round window).','Tap the Porthole, then tap 🔭 Spyglass.']},{t:'Open the flag box',k:'flags'},
+   {t:'Unlock the captain\'s desk',done:S=>S.used.desk,hints:['You found a key. What has a keyhole?','The captain\'s desk drawer has a brass keyhole.','Tap Captain\'s Desk, then tap 🗝️ Brass Key.']},{t:'Set the ship\'s clock',k:'clock'},{t:'Open the barrel tap',k:'barrel'},{t:'Put the map together',done:S=>S.inv.includes('map'),hints:['Two pieces of paper in your bag belong together.','Use 🔧 Combine in your bag.','Combine Map half (top) with Map half (bottom).']},{t:'Open the treasure chest',k:'chest'}],final:'chest'};}},
+{id:'space',blurb:'Beacon timing · crew logic grid · power core · cipher · volume',name:'Space Station',icon:'🚀',sub:'Factors, logic & volume',mins:'10–12',level:2,theme:'space',
+ build(D,T){const g1=mkGen(['lcm','gcf','prime'],D,{thing:'beacons',theme:'space',int:true,pickRandom:true},T);
+  const n4=D==3?5:4;const crew=['Nova','Rex','Juno','Kai','Zed'].slice(0,n4);const scol=['red','blue','green','yellow','purple'].slice(0,n4);let lg;do{lg=logicGrid(crew,scol);}while(!lg);
+  const cp=cipherPuzzle(['ORBIT','COMET','LUNAR','SOLAR','PROBE','ROVER','ALIEN','PLUTO','LASER','RADAR'],Math.min(3,D+1));
+  const g4=mkGen(['volume','area','word'],D,{unit:'cm',theme:'space',min:1,max:999,int:true},T);
+  const cr=shuf([2,3,4,5,6,7,8,9]).slice(0,4);const pc={};['A','B','C','D'].forEach((L,i)=>pc['k'+L]={label:'Crystal '+L,col:'#7ef9ff',val:String(cr[i])});const code=String(cr[0]*cr[1])+String(cr[2]+cr[3]);
+  return {intro:'Red alert! The station doors locked. Charge the console, crack the codes and reach the escape pod!',
+  objects:[
+   O('orbit','Beacon Screen','📡',3,7,20,26,'#1d2b53',{clue:`<div class="scr">${g1.clue}</div><p class="note">Crew locker code = the answer.</p>`}),
+   O('crew','Crew Board','👩‍🚀',26,7,19,27,'#e8f0ff',{clue:`<p><b>CREW SEATS</b>: ${crew.map((c,i)=>`Seat ${i+1}: <b>${c}</b>`).join(' · ')}. Each wears a different suit color.</p><ol>${lg.clues.map(c=>`<li>${c}</li>`).join('')}</ol>`}),
+   O('win','Window','🌍',48,7,18,22,'#0b1030',{kind:'decor',clue:'<p>Planet Earth floats by. Beautiful! But nothing useful here.</p>'}),
+   O('vent','Air Vent','🌀',69,7,10,13,'#8a9bb5',{gate:[{item:'wrench'}],pre:'<p>An air vent held shut with four big bolts.</p>',gives:['cell'],clue:'<p>Inside the vent: a <b>power cell</b> and a note:</p><div class="note">SUIT RACK: enter the suit colors in seat order. Seat 1 first!</div>'}),
+   O('console','Main Console','🎛️',3,52,26,36,'#2c3e66',{gate:[{item:'core'}],pre:'<p>The main console is dark. There is an empty slot labeled <b>POWER CORE</b>.</p>',clue:`<div class="scr"><p><b>INCOMING CODE</b>. Comms password:</p>${cp.clue}</div>`}),
+   O('comms','Comms Panel','📟',30,40,13,18,'#4a5f8f',{gate:[{lock:'comms'}],pre:`<p>The comms panel has a <b>${cp.word.length}-letter word lock</b>.</p>`,gives:['card'],clue:'<p>The comms panel prints a <b>launch card</b>!</p>'}),
+   O('cargo','Cargo Crate','📦',31,64,14,24,'#d98e32',{gate:[{lock:'cargo'}],pre:`<p>A label on the crate:</p>${g4.clue}<p>The crate has a <b>3-dial lock</b> (use 0s in front if needed, like 0 4 8).</p>`}),
+   O('suits','Suit Rack','🥼',48,38,16,50,'#cfd8e8',{gate:[{lock:'suits'}],pre:'<p>A rack of space suits behind a color-button lock.</p>',gives:['empty'],clue:'<p>Behind the suits: an <b>empty power core</b>.</p>'}),
+   O('locker','Crew Locker','🔒',66,40,12,48,'#5a6e8f',{gate:[{lock:'locker'}],pre:'<p>A crew locker with a number keypad.</p>',gives:['wrench'],clue:'<p>Inside: a big <b>wrench</b>!</p>'}),
+   O('pod','Escape Pod','🛸',81,14,17,72,'#e8eef8',{kind:'door',gate:[{lock:'pod'}],pre:'<p>The escape pod hatch. It needs a <b>launch code</b> on the keypad.</p>'}),
+   O('sticky','Old Sticky','🟨',2,39,7,10,'#ffe066',{kind:'trap',clue:'<div class="note">Pod code: 4471<br><i>EXPIRED: last mission</i></div>'})],
+  locks:{
+   locker:{type:'keypad',title:'Crew Locker',prompt:'Enter the answer from the beacon screen.',ans:g1.ans,hints:g1.hints,topic:g1.topic,piece:'kA',clueFrom:'orbit'},
+   suits:{type:'color',title:'Suit Rack',prompt:`Enter the ${n4} suit colors in seat order (seat 1 first).`,ans:lg.sol.join(','),len:n4,colors:scol,topic:'logic',piece:'kB',clueFrom:'crew',
+    hints:['Make a mini grid in your notes: names down the side, colors across. Cross out what each clue rules out.','"Or" clues and "not" clues cut choices down. Find someone with only one color left, then cross that color off for everyone else.',`${crew[0]} wears ${COLORS[lg.sol[0]].n}. ${crew[1]} wears ${COLORS[lg.sol[1]].n}. Now finish the rest.`]},
+   comms:{type:'word',title:'Comms Word Lock',prompt:'Spell the password from the main console.',ans:cp.word,len:cp.word.length,hints:cp.hints,topic:'logic',piece:'kC',clueFrom:'console'},
+   cargo:{type:'dial',title:'Cargo Dial Lock',prompt:'Set the 3 dials to the answer on the crate label.',ans:g4.ans.padStart(3,'0'),len:3,hints:g4.hints,topic:g4.topic,piece:'kD',clueFrom:'cargo'},
+   pod:{type:'keypad',title:'Pod Launch Keypad',prompt:'Enter the launch code.',ans:code,topic:'logic',clueFrom:'card',
+    hints:['You need all 4 crystals and the launch card from the comms panel.','The card says: first A × B, then C + D. Write the two answers side by side.',`A × B = ${cr[0]*cr[1]}. Now find C + D and put it right after.`]}},
+  items:{wrench:{name:'Wrench',icon:'🔧',html:'<p>Great for big bolts.</p>'},cell:{name:'Power Cell',icon:'🔋',html:'<p>Full of energy, but it needs something to plug into.</p>'},empty:{name:'Empty Power Core',icon:'⚪',html:'<p>A power core with an empty battery slot.</p>'},
+   core:{name:'Charged Core',icon:'🟢',html:'<p>A fully charged power core. Some machine needs this!</p>'},card:{name:'Launch Card',icon:'🎫',html:'<p><b>LAUNCH CARD</b></p><div class="note">Pod code = <b>Crystal A × Crystal B</b>, then right after it, <b>Crystal C + Crystal D</b>.<br>Example: if A × B = 12 and C + D = 9, the code is 129.</div>'}},
+  recipes:[{a:'cell',b:'empty',out:'core',msg:'Click! The power cell fits. The core glows green.'}],pieces:pc,
+  goals:[{t:'Open the crew locker',k:'locker'},{t:'Open the air vent',done:S=>S.used.vent,hints:['Bolts need a tool. Do you have one?','The air vent is up on the wall.','Tap Air Vent, then tap 🔧 Wrench.']},{t:'Open the suit rack',k:'suits'},{t:'Build a charged power core',done:S=>S.inv.includes('core')||S.used.console,hints:['Something with energy + something with an empty slot...','Use 🔧 Combine in your bag.','Combine the Power Cell with the Empty Power Core.']},
+   {t:'Power up the main console',done:S=>S.used.console,hints:['The charged core goes into a machine with an empty slot.','The main console is dark.','Tap Main Console, then tap 🟢 Charged Core.']},{t:'Unlock the comms panel',k:'comms'},{t:'Open the cargo crate',k:'cargo'},{t:'Launch the escape pod',k:'pod'}],final:'pod'};}},
+{id:'museum',blurb:'Gift-shop money · floor area · laser maze · balance scale · BCE dates',name:'Museum Vault Heist',icon:'🏛️',sub:'Geometry, money & mazes',mins:'10–12',level:3,theme:'museum',
+ build(D,T){const g1=mkGen(['dec','word','stretch'],D,{theme:'museum',title:'GIFT SHOP',items:['Dino poster','Moon mug','Postcards','Snow globe','Pencil set','Art book'],min:0.01},T);
+  const g2=mkGen(['area','volume','coord'],D,{unit:'m',int:true},T);let mz;do{mz=laserMaze(D);}while(!mz);
+  const v=ri(2,9);const sAns=D==3?6*v-3:6*v;
+  const arts=shuf([['Bronze Mask','🎭'],['Jade Dragon','🐉'],['Golden Scarab','🪲'],['Viking Helmet','⛑️'],['Clay Soldier','🗿'],['Silk Map','🧣'],['Moon Rock','🌑'],['Ice Crown','👑']]).slice(0,4);
+  const yrs=D==1?shuf([1066,1450,1820,1969,1215,1776,1903]).slice(0,4):D==2?shuf([-350,1066,1450,1820,1969,-1200,1776]).slice(0,4):shuf([-350,-1200,-30,1066,1450,1969,-800]).slice(0,4);
+  if(D>=2&&!yrs.some(y=>y<0))yrs[0]=-500;
+  const yt=y=>y<0?`${-y} BCE`:`${y} CE`;const dg=shuf([1,2,3,4,5,6,7,8,9]).slice(0,4);const pc={};arts.forEach((a,i)=>pc['a'+i]={label:a[0],icon:a[1],col:'#ffcf6b',val:String(dg[i]),year:yt(yrs[i])});
+  const ord=[0,1,2,3].sort((a,b)=>yrs[a]-yrs[b]);const code=ord.map(i=>dg[i]).join('');
+  const mzHtml=`<table class="maze"><tbody>${mz.g.map((r,ri_)=>`<tr>${r.map((c,ci)=>`<td class="${ri_==0&&ci==0?'st':ri_==4&&ci==4?'en':''}">${c}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
+  const safeTxt=mz.k?`multiples of <b>${mz.k}</b>`:'<b>prime numbers</b>';
+  return {intro:'Night shift at the museum: the vault locked with you inside! Find the 4 artifact tags and open the vault door.',
+  objects:[
+   O('paint','Painting','🖼️',3,6,22,30,'#d9b56b',{gate:[{item:'mag'}],pre:'<p>A painting of a gallery. The small sign under it is in <b>super tiny print</b>. You can\'t read it without help.</p>',clue:`<p>With the magnifier, the tiny sign reads:</p>${g2.clue}<p class="note">Gem case code = this answer.</p>`}),
+   O('laser','Laser Map','🔴',28,6,22,30,'#1b1b2f',{clue:`<p><b>LASER FLOOR</b>. Start at the green corner, finish at the gold corner. Safe tiles are only ${safeTxt}. Step up, down, left or right (no diagonals).</p><div class="ctr">${mzHtml}</div><p class="note">Laser control: enter one arrow for every step.</p>`}),
+   O('lctl','Laser Control','🎚️',52,8,12,18,'#34495e',{gate:[{lock:'laser'}],pre:'<p>The laser control box has a <b>direction lock</b>.</p>',gives:['badgeB'],clue:'<p>The lasers switch off. Under the control box: the right half of a <b>security badge</b>.</p>'}),
+   O('dino','Dino Bones','🦖',66,8,14,24,'#f0e6d2',{kind:'decor',clue:'<p>A T. rex skull. It looks hungry, but it has nothing for you.</p>'}),
+   O('gem','Gem Case','💎',3,56,20,32,'#9ad7f5',{gate:[{lock:'gem'}],pre:'<p>A glass gem case with a <b>number keypad</b>. Note: "code = new gallery floor area".</p>',gives:['badgeA'],clue:'<p>The glass slides up. Under the gem: the left half of a <b>security badge</b>.</p>'}),
+   O('desk','Security Desk','🛎️',25,62,24,26,'#4b6584',{gate:[{lock:'desk'}],pre:'<p>The security desk drawer has a keypad. A sticky says "Gift shop total, ask the receipt."</p>',gives:['mag'],clue:'<p>In the drawer: a <b>magnifying glass</b>.</p>'}),
+   O('rcpt','Gift Shop Receipt','🧾',26,44,9,14,'#ffffff',{clue:`${g1.clue}<p class="note">Desk drawer code = the answer.</p>`}),
+   O('scale','Balance Statue','⚖️',51,36,15,52,'#c9b38a',{gate:[{lock:'scale'}],pre:`<p>A statue holding balance scales. A plaque:</p><div class="note">🏺 One vase weighs <b>${v} kg</b>.<br>⚖️ One crown 👑 balances ${D==3?'3 vases, minus 2 kg':'3 vases'}.<br>⚖️ Two gems 💎💎 balance one crown + one vase.<br><b>Dial:</b> weight of 1 crown + 1 gem + 1 vase (kg).</div>`}),
+   O('vault','Vault Door','🏦',69,34,29,56,'#7f8c8d',{kind:'door',gate:[{item:'badge'},{lock:'vault'}],pre:S=>S.used.vault?`<p>Badge accepted! A card slides out:</p><div class="note">Set the 4 dials to the artifact tags' secret digits, from the <b>OLDEST</b> artifact to the <b>NEWEST</b>.<br><small>BCE years count down toward year 0, so 500 BCE is older than 100 BCE.</small></div>`:'<p>A huge vault door with a <b>badge reader</b> and 4 dials. The dials are frozen until a badge is scanned.</p>'}),
+   O('flyer','Tour Flyer','📰',51,90,10,9,'#ffd1dc',{kind:'trap',clue:'<div class="note">TOUR TIP: our artifacts are shown <b>newest first</b>!<br><i>(This is about the tour, not the vault.)</i></div>'})],
+  locks:{
+   desk:{type:'keypad',title:'Desk Keypad',prompt:'Enter the answer from the gift shop receipt.',ans:g1.ans,num:g1.num,hints:g1.hints,topic:g1.topic,piece:'a0',clueFrom:'rcpt'},
+   gem:{type:'keypad',title:'Gem Case Keypad',prompt:'Enter the answer from the tiny sign.',ans:g2.ans,hints:g2.hints,topic:g2.topic,piece:'a1',clueFrom:'paint'},
+   laser:{type:'dir',title:'Laser Control',prompt:'One arrow per step along the safe path.',ans:mz.ans.join(''),len:mz.ans.length,topic:'fpm',piece:'a2',clueFrom:'laser',
+    hints:[`Only step on ${mz.k?'multiples of '+mz.k:'prime numbers'}. Look at the tiles next to the start.`,`From the start, the first safe step is ${dirTxt([mz.ans[0]])}. There is only one safe way at each step.`,`The first ${mz.ans.length-2} arrows: ${dirTxt(mz.ans.slice(0,-2))}. Finish the last two.`]},
+   scale:{type:'dial',title:'Statue Dial',prompt:'Set the 2 dials to the total weight in kg.',ans:String(sAns).padStart(2,'0'),len:2,topic:'logic',piece:'a3',clueFrom:'scale',
+    hints:['Find each weight one at a time, starting with the one you know.',`Crown = ${D==3?`3 × ${v} − 2 = ${3*v-2}`:`3 × ${v} = ${3*v}`} kg. Two gems weigh crown + vase.`,`Two gems = ${D==3?3*v-2:3*v} + ${v} = ${D==3?4*v-2:4*v}, so one gem = ${D==3?2*v-1:2*v}. Now add crown + gem + vase.`]},
+   vault:{type:'dial',title:'Vault Dials',prompt:'Set the 4 dials: artifact digits from oldest to newest.',ans:code,len:4,topic:'stretch',clueFrom:'vault',
+    hints:['Look at the year on each artifact tag. BCE means "before year 1". The bigger the BCE number, the longer ago.','Order the years on a number line: BCE years are like negative numbers.',`Oldest is the ${arts[ord[0]][0]}, then the ${arts[ord[1]][0]}... finish the order.`]}},
+  items:{mag:{name:'Magnifier',icon:'🔍',html:'<p>Makes tiny print big.</p>'},badgeA:{name:'Badge (left)',icon:'🪪',html:'<p>Left half of a security badge.</p>'},badgeB:{name:'Badge (right)',icon:'💳',html:'<p>Right half of a security badge.</p>'},badge:{name:'Security Badge',icon:'🎖️',html:'<p>A complete security badge. Scan it somewhere important!</p>'}},
+  recipes:[{a:'badgeA',b:'badgeB',out:'badge',msg:'Snap! The two halves make a full security badge.'}],pieces:pc,
+  goals:[{t:'Open the security desk',k:'desk'},{t:'Read the tiny print',done:S=>S.used.paint,hints:['Some print is too small to read. You found a tool for that.','Look at the sign under the painting.','Tap Painting, then tap 🔍 Magnifier.']},{t:'Open the gem case',k:'gem'},{t:'Cross the laser floor',k:'laser'},{t:'Balance the statue',k:'scale'},
+   {t:'Build the security badge',done:S=>S.inv.includes('badge')||S.used.vault,hints:['Two halves of something are in your bag.','Use 🔧 Combine.','Combine Badge (left) and Badge (right).']},{t:'Scan the badge at the vault',done:S=>S.used.vault,hints:['Big doors often have a badge reader.','The vault door has one.','Tap Vault Door, then tap 🎖️ Security Badge.']},{t:'Open the vault',k:'vault'}],final:'vault'};}},
+{id:'teacher',blurb:'Exponents · fraction ropes · 5-locker logic · shift cipher · formula door',name:'Teacher\'s Challenge',icon:'🎓',sub:'HARD: middle-school stretch',mins:'12–15',level:4,theme:'school',
+ build(D0,T){const D=Math.min(3,D0+1);const g1=mkGen(['ooo','stretch','pattern'],3,{int:true},T);
+  const g2=mkGen(['frac','stretch','word'],D,{theme:'school',unit:'liters',what:'paint can'},T);
+  const names=['Mia','Leo','Ava','Sam','Zoe'];const lc=['red','blue','green','yellow','purple'];let lg;do{lg=logicGrid(names,lc);}while(!lg);
+  const sw=pick(['GENIUS','PUZZLE','DECODE','BRAINY','THINKS','SOLVED','MASTER','LEGEND']);const sh=ri(3,9),a=ri(3,7),b=ri(4,20);const enc=[...sw].map(c=>LET[(LET.indexOf(c)+sh)%26]).join('');
+  const st=shuf([2,3,4,5,6,7,8,9]);const [pa,pb,pcV,pd]=st;const code=String(pa*pb+pcV)+String(pd*pd);
+  const pc={sa:{label:'Star a',col:'#ffd23f',val:String(pa)},sb:{label:'Star b',col:'#ffd23f',val:String(pb)},sc:{label:'Star c',col:'#ffd23f',val:String(pcV)},sd:{label:'Star d',col:'#ffd23f',val:String(pd)}};
+  return {intro:'Your teacher locked the classroom with a real brain-buster. Collect the 4 gold stars (a, b, c, d) and crack the door formula!',
+  objects:[
+   O('chalk','Chalkboard','🟩',3,6,34,30,'#2f5d3a',{clue:`<div class="chalk">${g1.clue}</div><p class="note">Teacher's desk code = the value.</p>`}),
+   O('poster','Locker Poster','📌',40,7,17,27,'#fff3c4',{clue:`<p><b>WHO HAS WHICH LOCKER?</b> Lockers 1 to 5 belong to ${names.map((n,i)=>`${i+1}: <b>${n}</b>`).join(', ')}. Each locker is a different color.</p><ol>${lg.clues.map(c=>`<li>${c.replace('is not wearing','does not have').replace(' wears ',' has ').replace('suit sits right next to','locker is right next to').replace('suit','locker').replace('in a lower seat number than','in a lower number than')}</li>`).join('')}</ol>`}),
+   O('sticky','Sticky Note','🟨',60,8,10,13,'#ffe066',{clue:`<div class="note">Secret shift number <b>n</b>:<br><span class="mono">${a}n + ${b} = ${a*sh+b}</span></div>`}),
+   O('clock','Wall Clock','🕒',73,7,10,15,'#ffffff',{kind:'decor',clue:'<div class="ctr">'+clockSvg(2,55,120)+'</div><p>Almost home time! Nothing useful here.</p>'}),
+   O('shelf','Bookshelf','📚',3,42,16,46,'#8e5a2b',{gate:[{item:'ruler'}],pre:'<p>A book has slipped way behind the bookshelf. Your arm is too short. Something long and thin could reach it.</p>',clue:`<p>You fish out a math book. A page is bookmarked:</p>${g2.clue}<p class="note">Globe code = the answer.</p>`}),
+   O('globe','Globe Safe','🌐',21,50,12,20,'#3fa7ff',{gate:[{lock:'globe'}],pre:'<p>The globe opens like a safe. It has a keypad on its stand.</p>',gives:['noteA'],clue:'<p>Inside the globe: the top half of the teacher\'s note.</p>'}),
+   O('lockers','Lockers','🗄️',38,40,17,48,'#7d8fa8',{gate:[{lock:'lockers'}],pre:'<p>The locker row has a master color lock: <b>5 colors in locker order (1 to 5)</b>.</p>',gives:['noteB'],clue:'<p>Taped inside locker 5: the bottom half of the teacher\'s note.</p>'}),
+   O('pc','Class Computer','💻',59,40,14,17,'#34495e',{gate:[{lock:'pc'}],pre:`<p>The screen shows a scrambled word:</p><div class="big mono">${enc}</div><p>"Every letter was shifted <b>FORWARD by n</b>. Shift back to unlock." It has a ${sw.length}-letter word lock.</p>`,clue:'<p>ACCESS GRANTED. A gold star pops out of the printer!</p>'}),
+   O('tdesk','Teacher\'s Desk','🗃️',57,60,27,28,'#a8743f',{gate:[{lock:'tdesk'}],pre:'<p>The teacher\'s desk drawer has a number keypad.</p>',gives:['ruler'],clue:'<p>In the drawer: a long <b>ruler</b>.</p>'}),
+   O('door','Classroom Door','🚪',86,12,12,76,'#c0392b',{kind:'door',gate:[{lock:'door'}],pre:'<p>The door keypad blinks: <b>ENTER THE FORMULA CODE</b>.</p>'}),
+   O('trash','Recycling Bin','♻️',22,78,8,11,'#27ae60',{kind:'trap',clue:'<div class="note">Draft: door = a + b + c + d??<br><i>Crossed out. Teacher changed it!</i></div>'})],
+  locks:{
+   tdesk:{type:'keypad',title:'Desk Keypad',prompt:'Enter the value from the chalkboard.',ans:g1.ans,num:g1.num,hints:g1.hints,topic:g1.topic,piece:'sa',clueFrom:'chalk'},
+   globe:{type:'keypad',title:'Globe Keypad',prompt:'Enter the answer from the math book.',ans:g2.ans,num:g2.num,hints:g2.hints,topic:g2.topic,piece:'sb',clueFrom:'shelf'},
+   lockers:{type:'color',title:'Locker Color Lock',prompt:'Enter the 5 locker colors in order, locker 1 first.',ans:lg.sol.join(','),len:5,colors:lc,topic:'logic',piece:'sc',clueFrom:'poster',
+    hints:['Draw a 5 × 5 grid in your notes: names down, colors across. Mark ✗ for every "not".','When a row has only one color left, circle it and cross that color out of every other row.',`${names[0]} has ${COLORS[lg.sol[0]].n}, ${names[1]} has ${COLORS[lg.sol[1]].n}, ${names[2]} has ${COLORS[lg.sol[2]].n}. Two left!`]},
+   pc:{type:'word',title:'Computer Word Lock',prompt:`Shift each letter BACK by n. Spell the ${sw.length}-letter word.`,ans:sw,len:sw.length,topic:'stretch',piece:'sd',clueFrom:'sticky',
+    hints:['First find n using the sticky note. Undo the steps backwards.',`${a}n + ${b} = ${a*sh+b}, so ${a}n = ${a*sh}, and n = ${sh}. Now move each letter of ${enc} back ${sh} places.`,`${enc[0]} back ${sh} is ${sw[0]}, ${enc[1]} back ${sh} is ${sw[1]}. The word starts ${sw.slice(0,3)}...`]},
+   door:{type:'keypad',title:'Formula Keypad',prompt:'Use the teacher\'s note and your 4 stars.',ans:code,topic:'ooo',clueFrom:'tnote',
+    hints:['You need all four stars (a, b, c, d) and the full teacher\'s note.','Combine the two note halves. The formula uses order of operations: multiply before adding.',`a × b + c = ${pa*pb+pcV}. Now find d² and write it right after.`]}},
+  items:{ruler:{name:'Ruler',icon:'📏',html:'<p>Long and thin. Good for reaching things.</p>'},noteA:{name:'Note (top)',icon:'📄',html:'<p>"DOOR CODE = ..." the rest is on another piece.</p>'},noteB:{name:'Note (bottom)',icon:'📃',html:'<p>"... then d². Good luck!" Torn at the top.</p>'},
+   tnote:{name:'Teacher\'s Note',icon:'📝',html:'<p><b>TEACHER\'S NOTE</b></p><div class="note">Door code = <b>a × b + c</b>, then right after it, <b>d²</b>.<br>Example: if a × b + c = 23 and d² = 16, type 2316.</div>'}},
+  recipes:[{a:'noteA',b:'noteB',out:'tnote',msg:'The halves line up. The full teacher\'s note!'}],pieces:pc,
+  goals:[{t:'Open the teacher\'s desk',k:'tdesk'},{t:'Reach behind the bookshelf',done:S=>S.used.shelf,hints:['Something long and thin could reach it.','You got a ruler from the desk.','Tap Bookshelf, then tap 📏 Ruler.']},{t:'Open the globe safe',k:'globe'},{t:'Solve the locker poster',k:'lockers'},{t:'Unscramble the computer word',k:'pc'},{t:'Put the teacher\'s note together',done:S=>S.inv.includes('tnote'),hints:['Two note halves are in your bag.','Use 🔧 Combine.','Combine Note (top) and Note (bottom).']},{t:'Crack the door formula',k:'door'}],final:'door'};}}
+];
+
+// ===== storage + settings =====
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const LS={get(k,d){try{const v=JSON.parse(localStorage.getItem('bve2-'+k));return v==null?d:v;}catch(e){return d;}},set(k,v){try{localStorage.setItem('bve2-'+k,JSON.stringify(v));}catch(e){}}};
+let SET=Object.assign({diff:1,timer:'off',sound:true,topics:{}},LS.get('set',{}));
+let BEST=LS.get('best',{}),LOG=LS.get('log',[]),MINE=LS.get('mine',[]);
+const saveSet=()=>LS.set('set',SET);
+let S=null,SCR='home',tick=null,M=null,LOCKCTX=null;
+const app=$('#app');
+const fmt=t=>Math.floor(t/60)+':'+String(t%60).padStart(2,'0');
+const now=()=>Date.now();
+// ===== sound =====
+let AC=null;function ac(){if(!AC){try{AC=new(window.AudioContext||window.webkitAudioContext)();}catch(e){}}if(AC&&AC.state=='suspended')AC.resume();return AC;}
+function tone(f,t0,d,type='square',v=.06){if(!SET.sound)return;const c=ac();if(!c)return;try{const o=c.createOscillator(),g=c.createGain();o.type=type;o.frequency.value=f;g.gain.setValueAtTime(v,c.currentTime+t0);g.gain.exponentialRampToValueAtTime(.0001,c.currentTime+t0+d);o.connect(g);g.connect(c.destination);o.start(c.currentTime+t0);o.stop(c.currentTime+t0+d+.03);}catch(e){}}
+const SFX={click:()=>tone(700,0,.04,'square',.025),bad:()=>{tone(230,0,.14,'triangle',.08);tone(185,.12,.2,'triangle',.07);},unlock:()=>{tone(320,0,.05,'square',.06);tone(240,.06,.05,'square',.05);[523,659,784,1047].forEach((f,i)=>tone(f,.16+i*.09,.28,'triangle',.08));},item:()=>{[880,1175,1568].forEach((f,i)=>tone(f,i*.07,.16,'sine',.08));},win:()=>{[523,659,784,1047,784,1047,1319].forEach((f,i)=>tone(f,i*.12,.32,'triangle',.08));}};
+// ===== tiny UI utils =====
+function toast(t,ms=3000){const d=document.createElement('div');d.className='toast';d.textContent=t;document.body.appendChild(d);setTimeout(()=>d.remove(),ms);}
+function modal(html,cls=''){closeModal();const d=document.createElement('div');d.className='ov';d.id='ov';d.innerHTML=`<div class="md ${cls}" role="dialog">${html}</div>`;d.addEventListener('click',e=>{if(e.target===d)closeModal();});document.body.appendChild(d);return d;}
+function closeModal(){const o=$('#ov');if(o)o.remove();M=null;LOCKCTX=null;}
+function head(icon,title){return `<div class="mh"><span class="e">${icon}</span><h2>${title}</h2><button class="x" id="cx" aria-label="Close">✕</button></div>`;}
+function bindClose(fn){const b=$('#cx');if(b)b.onclick=()=>{closeModal();if(fn)fn();};}
+function fxUnlock(label='OPEN!'){const f=$('#fx');f.innerHTML=`<div class="plk"><div class="sh"></div><div class="bo">${label}</div></div>`;f.classList.add('on');confetti(26);setTimeout(()=>{f.classList.remove('on');f.innerHTML='';},1150);}
+function confetti(n){const cs=['#ff4d4d','#3d8bff','#35c46a','#ffd23f','#a66bff','#ff9a2e','#2fe0d0'];for(let i=0;i<n;i++){const d=document.createElement('div');d.className='cf';d.style.left=(innerWidth/2)+'px';d.style.top=(innerHeight/2)+'px';d.style.background=cs[i%cs.length];const a=Math.random()*Math.PI*2,r=120+Math.random()*Math.min(innerWidth,innerHeight)*.45;d.style.setProperty('--dx',Math.cos(a)*r+'px');d.style.setProperty('--dy',Math.sin(a)*r+'px');document.body.appendChild(d);setTimeout(()=>d.remove(),1400);}}
+// ===== HOME =====
+function go(s,arg){closeModal();$$('.cf').forEach(c=>c.remove());clearInterval(tick);SCR=s;({home,room:roomView,grown,workshop,dad:dadPlay}[s])(arg);}
+function home(){S=null;const firstNew=ROOMS.find(r=>!BEST[r.id]);
+ app.innerHTML=`<div class="page"><div class="home"><div class="logo"><h1>BLOCK <span>ESCAPE</span> ROOMS</h1><p>Search the room. Collect items. Crack the locks with math. Escape!</p></div>
+ <div class="rooms">${ROOMS.map(r=>{const b=BEST[r.id];return `<button class="rc" data-r="${r.id}" style="--c:${({lab:'#cfe9ff',ship:'#c8902e',space:'#2a3558',museum:'#b8a07a',school:'#2f5d3a'})[r.theme]}">${firstNew===r?'<span class="nx">▶ NEXT UP</span>':''}<span class="ri">${r.icon}</span><span><h2>${r.name}</h2><div class="s"><b>${r.sub}</b></div><div class="bl">${r.blurb}</div><div class="m"><span class="lvl">${'■'.repeat(r.level)+'□'.repeat(4-r.level)}</span><span>⏱ about ${r.mins} min</span>${b?`<span class="esc">✓ Escaped ×${b.n}${SET.timer=='on'&&b.time?' · best '+fmt(b.time):''}${b.nohint?' · 🧠':''}</span>`:'<span class="s">Not escaped yet</span>'}</div></span></button>`;}).join('')}</div>
+ <div class="hbar"><button class="btn g" id="tmT">⏱ Timer: ${SET.timer=='on'?'Relaxed (beat your best)':'Off'}</button><button class="btn y" id="wsB">🛠️ Make a lock for Dad</button><button class="btn g" id="gwB">🔐 Grown-ups</button></div>
+ <p class="tip">Tip: tap everything. Some things are clues, some are just for fun, and some are old notes that try to trick you. Hints are free: real escape teams use them too!</p></div></div>`;
+ $$('.rc').forEach(b=>b.onclick=()=>startRoom(b.dataset.r));
+ $('#tmT').onclick=()=>{SET.timer=SET.timer=='on'?'off':'on';saveSet();home();};
+ $('#wsB').onclick=()=>go('workshop');$('#gwB').onclick=pinPad;}
+// ===== GAME =====
+function startRoom(id,seed){const def=ROOMS.find(r=>r.id==id);seed=seed||((now()^Math.floor(Math.random()*1e9))>>>0);RNG=mulberry(seed);const R=def.build(SET.diff,SET.topics);RNG=Math.random;
+ for(const k in R.locks){R.locks[k].id=k;R.locks[k].obj=(R.objects.find(o=>(o.gate||[]).some(g=>g.lock==k))||{}).id;}
+ S={def,R,seed,solved:{},used:{},got:{},inv:[],pieces:[],seen:{},cards:[],hints:{},wrong:{},drafts:{},wheels:{},t0:now(),last:now(),notes:'',comb:null,done:false,newItems:{}};
+ go('room');
+ modal(`${head(def.icon,def.name)}<div class="mb"><p class="wp"><b>🎯 Mission:</b> ${R.intro}</p><div class="note">👆 Tap things in the room to search them.<br>🎒 Items go in your bag. Tap 🔧 Combine to join two items.<br>🔒 Locks open with math. Clue cards you find show up next to every lock.<br>💡 Stuck? Hints go nudge → bigger hint → worked step.</div><button class="go" id="letsgo">Let's go!</button></div>`);
+ bindClose();$('#letsgo').onclick=closeModal;}
+const L_=id=>S.R.locks[id];const O_=id=>S.R.objects.find(o=>o.id==id);
+function gateOf(o){for(const g of o.gate||[]){if(g.lock&&!S.solved[g.lock])return g;if(g.item&&!S.used[o.id])return g;}return null;}
+function goals(){return S.R.goals.map((g,i)=>({...g,i,done:g.k?!!S.solved[g.k]:!!g.done(S)}));}
+function curGoal(){return goals().find(g=>!g.done);}
+function roomView(){const R=S.R,def=S.def;const nL=Object.keys(R.locks).length,nS=Object.keys(S.solved).length;
+ app.innerHTML=`<div class="rv theme-${def.theme}">
+ <header class="rtop"><button class="ib" id="bk" aria-label="Back to rooms">←<span> Rooms</span></button><div class="rname hd">${def.icon} ${def.name}</div>
+ <div class="lbar" title="Locks opened"><span>🔒</span><div class="tr"><i style="width:${nS/nL*100}%"></i></div><b id="lcount">${nS}/${nL}</b></div>
+ ${SET.timer=='on'?`<div class="tmr" id="tmr"></div>`:''}<button class="ib" id="cluesB">📜<span> Clues</span> ${S.cards.length}</button><button class="ib hint" id="hintB">💡<span> Hint</span></button></header>
+ <div class="stagew"><div class="scene" id="scene">${R.objects.map(objHtml).join('')}</div></div>
+ <aside class="side" id="side">${sideHtml()}</aside></div>`;
+ bindRoom();updTimer();clearInterval(tick);tick=setInterval(()=>{updTimer();if(!S||S.done)return;if(now()-S.last>75000&&!$('#ov'))$('#hintB')&&$('#hintB').classList.add('pulse');},1000);}
+function objHtml(o){const g=gateOf(o);const k=o.kind||'clue';let cls=`ob k-${k}`,bd='';
+ if(g&&g.lock)bd='🔒';else if(g&&g.item)bd='❔';else if(o.gate)bd='🔓';else if(S.seen[o.id])bd='✓';
+ if(!S.seen[o.id]){cls+=' new';if(!bd)bd='!';}if(o.gate&&!g)cls+=' open';
+ return `<button class="${cls}" data-o="${o.id}" style="left:${o.x}%;top:${o.y}%;width:${o.w}%;height:${o.h}%;--c:${o.col}"><span class="ic">${o.icon}</span><span class="nm">${o.name}</span>${bd?`<span class="bd">${bd}</span>`:''}</button>`;}
+function pieceHtml(id){const p=S.R.pieces[id];return `<div class="pc" style="--c:${p.col}"><small>${p.icon?p.icon+' ':''}${p.label}</small>${p.year?`<div class="yr">${p.year}</div>`:''}<b>${p.val}</b></div>`;}
+function sideHtml(){const gs=goals(),cg=gs.find(g=>!g.done);const it=S.R.items;
+ return `<div class="card goal"><div class="lbl">🎯 GOAL<span class="sp"></span><span style="color:var(--mu)">${gs.filter(g=>g.done).length}/${gs.length}</span></div><div class="gt" id="goalT">${cg?cg.t:'All done!'}</div><div class="gl">${gs.map(g=>`<i class="${g.done?'d':''}"></i>`).join('')}</div></div>
+ <div class="card"><div class="lbl">🧩 CODE PIECES</div><div class="pcl">${S.pieces.map(pieceHtml).join('')||'<span class="empty">Open locks to collect pieces of the final code.</span>'}</div></div>
+ <div class="card"><div class="lbl">🎒 BAG<span class="sp"></span><button id="cmbB" class="${S.comb?'on':''}">🔧 ${S.comb?'Pick 2…':'Combine'}</button></div><div class="slots">${S.inv.map(i=>`<button class="slot ${S.comb&&S.comb.includes(i)?'sel':''} ${S.newItems[i]?'newi':''}" data-i="${i}"><span>${it[i].icon}</span>${it[i].name}</button>`).join('')||'<span class="empty">Empty for now.</span>'}</div></div>
+ <div class="card nts"><div class="lbl">📝 NOTES<span class="sp"></span><button id="stkB">🧮 Line-up helper</button></div><textarea id="nt" placeholder="Jot clues and numbers here..." spellcheck="false"></textarea></div>`;}
+function bindSide(){S.newItems={};$('#nt').value=S.notes;$('#nt').oninput=e=>{S.notes=e.target.value;};
+ $('#cmbB').onclick=()=>{S.comb=S.comb?null:[];refresh();if(S.comb)toast('Tap two items to combine them.');};
+ $$('.slot').forEach(b=>b.onclick=()=>slotTap(b.dataset.i));$('#stkB').onclick=stackTool;}
+function bindRoom(){$('#bk').onclick=()=>{if(Object.keys(S.solved).length&&!S.done){modal(`${head('🚪','Leave this room?')}<div class="mb"><p>Your progress in this room will be lost.</p><div class="hrow"><button class="btn r" id="lv">Leave</button><button class="btn" id="st">Stay</button></div></div>`);bindClose();$('#lv').onclick=()=>go('home');$('#st').onclick=closeModal;}else go('home');};
+ $$('.ob').forEach(b=>b.onclick=()=>{SFX.click();inspect(b.dataset.o);});$('#cluesB').onclick=()=>journal();$('#hintB').onclick=goalHint;bindSide();}
+function refresh(){if(SCR!='room'||!S)return;const nL=Object.keys(S.R.locks).length,nS=Object.keys(S.solved).length;$('#scene').innerHTML=S.R.objects.map(objHtml).join('');$$('.ob').forEach(b=>b.onclick=()=>{SFX.click();inspect(b.dataset.o);});
+ $('#side').innerHTML=sideHtml();bindSide();$('.lbar i').style.width=(nS/nL*100)+'%';$('#lcount').textContent=`${nS}/${nL}`;$('#cluesB').innerHTML=`📜<span> Clues</span> ${S.cards.length}`;}
+function updTimer(){const e=$('#tmr');if(!e||!S)return;const t=Math.floor(((S.done?S.tEnd:now())-S.t0)/1000);const b=BEST[S.def.id];e.innerHTML=`⏱ ${fmt(t)}${b&&b.time?` <small>best ${fmt(b.time)}</small>`:''}`;}
+function touch(){S.last=now();const h=$('#hintB');if(h)h.classList.remove('pulse');}
+function addCard(id,title,icon,html){const c=S.cards.find(c=>c.id==id);if(c){c.html=html;return;}S.cards.push({id,title,icon,html});}
+function grant(items){const got=[];(items||[]).forEach(i=>{if(!S.inv.includes(i)){S.inv.push(i);S.newItems[i]=1;got.push(i);}});if(got.length)setTimeout(SFX.item,150);return got;}
+function gotHtml(got){return got.length?`<div class="got">${got.map(i=>`<div><span>${S.R.items[i].icon}</span>You got: ${S.R.items[i].name}!</div>`).join('')}</div>`:'';}
+function inspect(id){touch();const o=O_(id);S.seen[id]=1;const g=gateOf(o);let body='';const pre=typeof o.pre=='function'?o.pre(S):(o.pre||'');
+ if(g&&g.lock){const L=L_(g.lock);if(L.clueFrom==o.id)addCard(o.id,o.name,o.icon,pre);
+  body=`${pre}<button class="go" id="tryL">🔒 Try the ${L.title}</button>`;}
+ else if(g&&g.item){body=`${pre}<p><b>Use something from your bag:</b></p><div class="usebar">${S.inv.map(i=>`<button data-use="${i}"><span>${S.R.items[i].icon}</span>${S.R.items[i].name}</button>`).join('')||'<span class="empty" style="color:#667">Your bag is empty. Keep exploring!</span>'}</div><div class="msg" id="umsg"></div>`;}
+ else{const cl=typeof o.clue=='function'?o.clue(S):(o.clue||'');let got=[];if(!S.got[id]){S.got[id]=1;got=grant(o.gives);}
+  const isClue=Object.values(S.R.locks).some(L=>L.clueFrom==o.id);if(o.kind!='decor'&&cl&&(!o.gate||isClue))addCard(o.id,o.name,o.icon,cl);
+  body=(o.gate&&o.kind!='door'&&pre&&o.gate.some(x=>x.item)&&typeof o.pre=='function'?pre:'')+cl+gotHtml(got);}
+ modal(`${head(o.icon,o.name)}<div class="mb">${body}</div>`);bindClose(refresh);
+ if($('#tryL'))$('#tryL').onclick=()=>openLock(g.lock);
+ $$('[data-use]').forEach(b=>b.onclick=()=>useItem(id,b.dataset.use));
+ refresh();}
+function useItem(oid,item){touch();const o=O_(oid),g=gateOf(o);if(g&&g.item==item){S.used[oid]=1;SFX.unlock();
+  const still=S.R.objects.some(x=>x.id!=oid&&(x.gate||[]).some(q=>q.item==item)&&!S.used[x.id]);if(!still)S.inv=S.inv.filter(i=>i!=item);
+  inspect(oid);}else{SFX.bad();const m=$('#umsg');if(m){m.className='msg bad';m.textContent='Hmm, that does not work here. Try something else!';}$('.md').classList.remove('shake');void $('.md').offsetWidth;$('.md').classList.add('shake');}}
+function slotTap(i){touch();const it=S.R.items[i];
+ if(S.comb){if(S.comb.includes(i)){S.comb=S.comb.filter(x=>x!=i);refresh();return;}S.comb.push(i);refresh();
+  if(S.comb.length==2){const [a,b]=S.comb;const r=S.R.recipes.find(r=>(r.a==a&&r.b==b)||(r.a==b&&r.b==a));S.comb=null;
+   if(r){S.inv=S.inv.filter(x=>x!=a&&x!=b);grant([r.out]);fxUnlock('✨');const o=S.R.items[r.out];addCard(r.out,o.name,o.icon,o.html);refresh();setTimeout(()=>{modal(`${head(o.icon,o.name)}<div class="mb"><p class="good"><b>${r.msg}</b></p>${o.html}</div>`);bindClose(refresh);},700);}
+   else{SFX.bad();toast('Those two do not fit together. Try a different pair.');refresh();}}return;}
+ const isCard=Object.values(S.R.locks).some(L=>L.clueFrom==i);if(isCard)addCard(i,it.name,it.icon,it.html);
+ modal(`${head(it.icon,it.name)}<div class="mb">${it.html}<p class="small" style="color:#667">To use it, tap the thing in the room you want to use it on.</p></div>`);bindClose(refresh);}
+function journal(sel){touch();if(!S.cards.length){toast('No clue cards yet. Tap things in the room to find clues!');return;}
+ modal(`${head('📜','Clue cards')}<div class="mb">${cardsPane(sel)}</div>`,'wide');bindClose();bindCards();}
+function cardsPane(sel){if(!S.cards.length)return '<p class="empty" style="color:#667">No clue cards yet. Explore the room to find clues!</p>';const c=S.cards.find(c=>c.id==sel)||S.cards[S.cards.length-1];
+ return `<div class="tabs">${S.cards.map(k=>`<button data-card="${k.id}" class="${k.id==c.id?'on':''}">${k.icon} ${k.title}</button>`).join('')}</div><div class="cbody" id="cbody">${c.html}</div>`;}
+function bindCards(){$$('[data-card]').forEach(b=>b.onclick=()=>{$$('[data-card]').forEach(x=>x.classList.toggle('on',x==b));$('#cbody').innerHTML=S.cards.find(c=>c.id==b.dataset.card).html;});}
+// ===== lock mechanisms (shared with workshop) =====
+function mkMech(L,draft){const m={type:L.type,len:L.len||0,L};
+ if(L.type=='keypad')m.s=draft&&draft.s||'';
+ if(L.type=='dial')m.d=draft&&draft.d?draft.d.slice():Array(L.len).fill(0);
+ if(L.type=='color'||L.type=='dir')m.seq=draft&&draft.seq?draft.seq.slice():[];
+ if(L.type=='word'){m.sets=L.sets;m.w=draft&&draft.w?draft.w.slice():L.sets.map((st,i)=>{let k;do{k=Math.floor(Math.random()*st.length);}while(st[k]==L.ans[i]&&st.length>1);return k;});m.cur=0;}
+ return m;}
+function wordSets(ans){return [...ans].map(ch=>{const o=new Set([ch]);while(o.size<8)o.add(LET[Math.floor(Math.random()*26)]);return [...o].sort();});}
+function mechHtml(m){const L=m.L;
+ if(m.type=='keypad')return `<div class="kd" id="kd">${m.s||'&nbsp;'}</div><div class="keys">${['7','8','9','4','5','6','1','2','3','.','0','⌫'].map(k=>`<button data-k="${k}">${k}</button>`).join('')}</div><button class="go" id="lkGo">✔ Try it</button>`;
+ if(m.type=='dial')return `<div class="dials">${m.d.map((d,i)=>`${L.sep&&i==L.sep?'<span class="dsep">:</span>':''}<div class="whl"><button data-up="${i}" aria-label="up">▲</button><b>${d}</b><button data-dn="${i}" aria-label="down">▼</button></div>`).join('')}</div><button class="go" id="lkGo">✔ Pull the handle</button>`;
+ if(m.type=='color')return `<div class="slotsr">${Array.from({length:m.len},(_,i)=>{const c=m.seq[i];return c?`<i class="f" style="--c:${COLORS[c].c}">${COLORS[c].s}</i>`:'<i></i>';}).join('')}</div><div class="pal">${L.colors.map(c=>`<button data-c="${c}" style="--c:${COLORS[c].c}"><span>${COLORS[c].s}</span>${COLORS[c].n}</button>`).join('')}</div><div class="erow"><button data-x="back">⌫ Undo</button><button data-x="clr">Clear</button></div><button class="go" id="lkGo">✔ Try it</button>`;
+ if(m.type=='dir')return `<div class="slotsr">${Array.from({length:Math.max(m.len,m.seq.length)},(_,i)=>{const d=m.seq[i];return d?`<i class="f">${dirTxt([d])}</i>`:'<i></i>';}).join('')}</div><div class="dpad">${['U','L','D','R'].map(d=>`<button data-d="${d}">${dirTxt([d])}</button>`).join('')}</div><div class="erow"><button data-x="back">⌫ Undo</button><button data-x="clr">Clear</button></div><button class="go" id="lkGo">✔ Try it</button>`;
+ if(m.type=='word')return `<div class="dials">${m.w.map((k,i)=>`<div class="whl"><button data-wu="${i}" aria-label="up">▲</button><b>${m.sets[i][k]}</b><button data-wd="${i}" aria-label="down">▼</button></div>`).join('')}</div><button class="go" id="lkGo">✔ Pull the handle</button>`;}
+function mechVal(m){return m.type=='keypad'?m.s:m.type=='dial'?m.d.join(''):m.type=='word'?m.w.map((k,i)=>m.sets[i][k]).join(''):m.type=='color'?m.seq.join(','):m.seq.join('');}
+function mechEq(L,v){if(L.type=='keypad'){if(!v||v=='.')return false;if(/^0\d/.test(L.ans))return v===L.ans;return Math.abs(parseFloat(v)-parseFloat(L.ans))<0.0001;}return v===L.ans;}
+function bindMech(box,m,onTry){const re=()=>{box.innerHTML=mechHtml(m);bindMech(box,m,onTry);};
+ box.querySelectorAll('[data-k]').forEach(b=>b.onclick=()=>{SFX.click();const k=b.dataset.k;if(k=='⌫')m.s=m.s.slice(0,-1);else if(m.s.length<9&&!(k=='.'&&m.s.includes('.')))m.s+=k;box.querySelector('#kd').innerHTML=m.s||'&nbsp;';});
+ box.querySelectorAll('[data-up],[data-dn]').forEach(b=>b.onclick=()=>{SFX.click();const i=+(b.dataset.up??b.dataset.dn);m.d[i]=(m.d[i]+(b.dataset.up!=null?1:9))%10;re();});
+ box.querySelectorAll('[data-wu],[data-wd]').forEach(b=>b.onclick=()=>{SFX.click();const i=+(b.dataset.wu??b.dataset.wd),n=m.sets[i].length;m.w[i]=(m.w[i]+(b.dataset.wu!=null?n-1:1))%n;re();});
+ box.querySelectorAll('[data-c]').forEach(b=>b.onclick=()=>{SFX.click();if(m.seq.length<m.len)m.seq.push(b.dataset.c);re();});
+ box.querySelectorAll('[data-d]').forEach(b=>b.onclick=()=>{SFX.click();if(m.seq.length<Math.max(m.len,14))m.seq.push(b.dataset.d);re();});
+ box.querySelectorAll('[data-x]').forEach(b=>b.onclick=()=>{if(b.dataset.x=='back')m.seq.pop();else m.seq=[];re();});
+ box.querySelector('#lkGo').onclick=()=>onTry(mechVal(m));}
+function mechKey(e){if(!M||!M.box)return;const m=M.m;const k=e.key;
+ if(k=='Enter'){e.preventDefault();M.box.querySelector('#lkGo').click();return;}
+ if(m.type=='keypad'){if(/^[0-9.]$/.test(k)){const b=M.box.querySelector(`[data-k="${k}"]`);b&&b.click();}else if(k=='Backspace'){M.box.querySelector('[data-k="⌫"]').click();}}
+ else if(m.type=='dir'){const d={ArrowUp:'U',ArrowDown:'D',ArrowLeft:'L',ArrowRight:'R'}[k];if(d){e.preventDefault();M.box.querySelector(`[data-d="${d}"]`).click();}else if(k=='Backspace')M.box.querySelector('[data-x="back"]').click();}
+ else if(m.type=='dial'){if(/^[0-9]$/.test(k)){m.d[m.cur||0]=+k;m.cur=((m.cur||0)+1)%m.len;M.box.innerHTML=mechHtml(m);bindMech(M.box,m,M.onTry);}}
+ else if(m.type=='word'){const K=k.toUpperCase();if(/^[A-Z]$/.test(K)){const i=m.cur||0;const j=m.sets[i].indexOf(K);if(j>=0){m.w[i]=j;m.cur=(i+1)%m.len;M.box.innerHTML=mechHtml(m);bindMech(M.box,m,M.onTry);}}}}
+document.addEventListener('keydown',e=>{if(e.target&&/TEXTAREA|INPUT/.test(e.target.tagName))return;if(e.key=='Escape'&&$('#ov')){$('#cx')&&$('#cx').click();return;}mechKey(e);});
+// ===== lock modal =====
+const TIER=['👉 Nudge','🔎 Bigger hint','🛠️ Worked step'];
+function hintsHtml(hs,n){return hs.slice(0,n).map((h,i)=>`<div class="hint"><b>${TIER[i]}</b>${h}</div>`).join('');}
+function openLock(id){touch();const L=L_(id);if(L.type=='word'&&!S.wheels[id])S.wheels[id]=wordSets(L.ans);if(L.type=='word')L.sets=S.wheels[id];
+ const m=mkMech(L,S.drafts[id]);S.drafts[id]=m;
+ const sel=S.cards.find(c=>c.id==L.clueFrom)?L.clueFrom:null;
+ modal(`${head('🔒',L.title)}<div class="lkg"><section class="cluep">${cardsPane(sel)}</section><section class="lockp"><p class="lp">${L.prompt}</p><div class="mech" id="mech"></div><div class="msg" id="lmsg"></div><div class="hrow"><button class="btn y" id="lh"></button></div><div id="hl"></div></section></div>`,'wide');
+ bindClose(refresh);bindCards();const box=$('#mech');box.innerHTML=mechHtml(m);const onTry=v=>tryLock(id,v);bindMech(box,m,onTry);M={box,m,onTry};LOCKCTX=id;renderHints(id);$('#lh').onclick=()=>{useHint(id);renderHints(id);};}
+function renderHints(id){const L=L_(id),n=S.hints[id]||0;$('#hl').innerHTML=hintsHtml(L.hints,n);const b=$('#lh');b.textContent=n>=3?'💡 All hints shown':`💡 ${TIER[n]} (${n+1} of 3)`;b.disabled=n>=3;}
+function useHint(id){touch();S.hints[id]=Math.min(3,(S.hints[id]||0)+1);}
+const NOPE=['Not yet! Check your clue card again.','So close to cracking it. Try once more!','Hmm, the lock did not budge. Double-check one step.','Not quite. Real escape teams retry all the time!'];
+function tryLock(id,v){touch();const L=L_(id);if(!v){toast('Enter something first!');return;}
+ if(mechEq(L,v)){solve(id);return;}
+ S.wrong[id]=(S.wrong[id]||0)+1;SFX.bad();const md=$('.md');md.classList.remove('shake');void md.offsetWidth;md.classList.add('shake');
+ const msg=$('#lmsg');msg.className='msg bad';msg.textContent=NOPE[(S.wrong[id]-1)%NOPE.length]+(S.wrong[id]>=3&&(S.hints[id]||0)<3?' Want a hint? Tap the yellow button.':'');if(S.wrong[id]>=3)$('#lh').classList.add('pulse');}
+function solve(id){const L=L_(id);S.solved[id]=1;delete S.drafts[id];[L.piece].concat(L.pieces2||[]).filter(Boolean).forEach(p=>{if(!S.pieces.includes(p))S.pieces.push(p);});
+ SFX.unlock();closeModal();fxUnlock();refresh();
+ setTimeout(()=>{if(id==S.R.final){finish();return;}if(L.obj)inspect(L.obj);const p=L.piece?S.R.pieces[L.piece]:null;if(p&&$('.mb'))$('.mb').insertAdjacentHTML('afterbegin',`<div class="got"><div style="background:#fff8d6;border-color:#c9a400">🧩 Code piece: <b>${p.label} = ${p.val}</b>${p.year?' ('+p.year+')':''}</div>${(L.pieces2||[]).map(q=>`<div style="background:#fff8d6;border-color:#c9a400">🧩 ${S.R.pieces[q].label} = ${S.R.pieces[q].val}</div>`).join('')}</div>`);},1000);}
+function goalHint(){touch();const g=curGoal();if(!g)return;let hs,key;if(g.k){hs=L_(g.k).hints;key=g.k;}else{hs=g.hints;key='g'+g.i;}
+ const draw=()=>{const n=S.hints[key]||0;$('#gh').innerHTML=n?hintsHtml(hs,n):'<p>Hints are free. Start with a little nudge.</p>';const b=$('#ghb');b.textContent=n>=3?'All hints shown':`💡 ${TIER[n]} (${n+1} of 3)`;b.disabled=n>=3;};
+ modal(`${head('💡','Hint: '+g.t)}<div class="mb"><div id="gh"></div><div class="hrow"><button class="btn y" id="ghb"></button>${g.k&&S.R.locks[g.k].obj&&!gateOf(O_(S.R.locks[g.k].obj))?'':''}</div></div>`);bindClose();
+ $('#ghb').onclick=()=>{S.hints[key]=Math.min(3,(S.hints[key]||0)+1);draw();};draw();}
+function finish(){S.done=true;S.tEnd=now();const t=Math.floor((S.tEnd-S.t0)/1000),id=S.def.id;const hintMap={};let tot=0;
+ for(const k in S.hints){const n=S.hints[k];if(!n)continue;tot+=n;const title=S.R.locks[k]?S.R.locks[k].title:S.R.goals[+k.slice(1)].t;hintMap[title]={n,topic:S.R.locks[k]?S.R.locks[k].topic:'steps'};}
+ const prev=BEST[id];const newBest=!prev||!prev.time||t<prev.time;BEST[id]={n:(prev?prev.n:0)+1,time:newBest?t:prev.time,nohint:(prev&&prev.nohint)||tot==0};LS.set('best',BEST);
+ LOG.unshift({room:S.def.name,d:new Date().toLocaleDateString(undefined,{month:'short',day:'numeric'}),t,diff:SET.diff,hints:hintMap,tot,wrong:Object.values(S.wrong).reduce((a,b)=>a+b,0)});LOG=LOG.slice(0,40);LS.set('log',LOG);
+ SFX.win();confetti(60);setTimeout(()=>confetti(40),500);const nx=ROOMS[ROOMS.findIndex(r=>r.id==id)+1];
+ modal(`<div class="win"><div style="font-size:64px">🏆</div><h2>YOU ESCAPED!</h2><p class="wp"><b>${S.def.name}</b> is cracked.</p>
+  <div>${SET.timer=='on'?`<span class="bdg">⏱ ${fmt(t)}${newBest&&prev?' · NEW BEST!':''}</span>`:''}${tot==0?'<span class="bdg">🧠 No-hint escape!</span>':`<span class="bdg">💡 ${tot} hint${tot>1?'s':''} used, like a pro team</span>`}<span class="bdg">🔒 ${Object.keys(S.solved).length} locks opened</span></div>
+  <p class="small" style="color:#556">Play again for brand-new numbers. The puzzles stay the same kind, the answers change.</p>
+  <div class="row">${nx?`<button class="btn" id="nxB">Next: ${nx.icon} ${nx.name} ▶</button>`:''}<button class="btn y" id="agB">🔁 Play again</button><button class="btn g" id="hmB">All rooms</button></div></div>`);
+ if(nx)$('#nxB').onclick=()=>startRoom(nx.id);$('#agB').onclick=()=>startRoom(id);$('#hmB').onclick=()=>go('home');updTimer();}
+// ===== line-up helper =====
+function stackTool(){touch();modal(`${head('🧮','Line-up helper')}<div class="mb"><p>Type the numbers. The helper lines them up by place value (decimal points in a column) so you can work it out in your head. It does <b>not</b> give the answer.</p>
+ <div style="display:flex;gap:8px;flex-wrap:wrap"><input class="fld" id="sa" inputmode="decimal" placeholder="first number" style="flex:1;min-width:120px;background:#f3f7ff;color:#16263d"><input class="fld" id="sb" inputmode="decimal" placeholder="second number" style="flex:1;min-width:120px;background:#f3f7ff;color:#16263d"><input class="fld" id="sc" inputmode="decimal" placeholder="third (optional)" style="flex:1;min-width:120px;background:#f3f7ff;color:#16263d"></div>
+ <div class="seg" style="margin-top:8px" id="sop">${['+','−','×'].map((o,i)=>`<button data-op="${o}" class="${i==0?'on':''}" style="color:#fff">${o}</button>`).join('')}</div><div id="sout"></div></div>`);bindClose();
+ let op='+';const draw=()=>{const v=['#sa','#sb','#sc'].map(s=>$(s).value.trim()).filter(x=>/^\d*\.?\d+$/.test(x));
+  if(op=='×'&&v.length>2)v.length=2;$('#sout').innerHTML=v.length>=2?stack(v,op,{res:'?'}):'<p class="small" style="color:#667">Enter at least two numbers.</p>';};
+ ['#sa','#sb','#sc'].forEach(s=>$(s).oninput=draw);$$('[data-op]').forEach(b=>b.onclick=()=>{op=b.dataset.op;$$('[data-op]').forEach(x=>x.classList.toggle('on',x==b));draw();});draw();}
+// ===== grown-up =====
+function pinPad(){let p='';modal(`${head('🔐','Grown-ups only')}<div class="mb pin"><p>Enter the 4-digit PIN.</p><div class="dots">${'<i></i>'.repeat(4)}</div><div class="keys">${['1','2','3','4','5','6','7','8','9','','0','⌫'].map(k=>k?`<button data-p="${k}">${k}</button>`:'<span></span>').join('')}</div><div class="msg bad" id="pm"></div></div>`);bindClose();
+ const draw=()=>$$('.dots i').forEach((d,i)=>d.classList.toggle('f',i<p.length));
+ $$('[data-p]').forEach(b=>b.onclick=()=>{const k=b.dataset.p;if(k=='⌫')p=p.slice(0,-1);else if(p.length<4)p+=k;draw();if(p.length==4){if(p=='2468'){closeModal();go('grown');}else{$('#pm').textContent='Wrong PIN.';p='';setTimeout(draw,250);}}});}
+function grown(){const tk=Object.keys(TOPICS).filter(k=>k!='logic');const byTopic={};LOG.forEach(l=>Object.values(l.hints).forEach(h=>{byTopic[h.topic]=(byTopic[h.topic]||0)+h.n;}));
+ const tops=Object.entries(byTopic).sort((a,b)=>b[1]-a[1]);
+ app.innerHTML=`<div class="page"><div class="wrap"><div class="topb"><button class="btn g" id="bk">← Back</button><h1>🔐 Grown-up panel</h1></div><div class="cols">
+ <div class="panel"><h3>Difficulty</h3><div class="seg" id="dif">${[[1,'Normal (5th grade)'],[2,'Hard (5th+)'],[3,'Expert (6th)']].map(([v,n])=>`<button data-v="${v}" class="${SET.diff==v?'on':''}">${n}</button>`).join('')}</div>
+  <p class="small">The Teacher's Challenge is always one step harder than this setting.</p>
+  <h3>Number-puzzle topics</h3><div class="chips" id="tops">${tk.map(k=>`<button data-t="${k}" class="${SET.topics[k]===false?'':'on'}">${SET.topics[k]===false?'○':'✓'} ${TOPICS[k]}</button>`).join('')}</div>
+  <p class="small">Turning a topic off swaps those number locks for another topic. The story puzzles (ciphers, logic grids, laser maze, robot route, ship's clock, flags, coins) always stay.</p>
+  <h3 style="margin-top:12px">Timer</h3><div class="seg" id="tmr2"><button data-v="off" class="${SET.timer!='on'?'on':''}">Off (default)</button><button data-v="on" class="${SET.timer=='on'?'on':''}">Relaxed: count up, beat your best</button></div>
+  <h3>Sound</h3><div class="seg" id="snd"><button data-v="1" class="${SET.sound?'on':''}">On</button><button data-v="0" class="${!SET.sound?'on':''}">Off</button></div></div>
+ <div class="panel"><h3>Which puzzles needed hints</h3>${tops.length?`<p class="small">Most hints by topic: ${tops.map(([t,n])=>`<b>${TOPICS[t]||t}</b> ${n}`).join(' · ')}</p>`:''}
+  ${LOG.length?`<table class="logt"><thead><tr><th>Date</th><th>Room</th><th>Time</th><th>Hints used on</th></tr></thead><tbody>${LOG.slice(0,15).map(l=>`<tr><td>${l.d}</td><td>${l.room}<br><span class="small">${['','Normal','Hard','Expert'][l.diff]}</span></td><td>${fmt(l.t)}</td><td>${l.tot?Object.entries(l.hints).map(([k,h])=>`${k} <span class="small">(${TOPICS[h.topic]||h.topic})</span>: ${h.n}`).join('<br>'):'<span style="color:var(--lime)">No hints!</span>'}${l.wrong?`<br><span class="small">${l.wrong} wrong ${l.wrong==1?"try":"tries"}</span>`:''}</td></tr>`).join('')}</tbody></table>`:'<p class="small">No escapes yet. Results show up here after each room.</p>'}
+  <div class="hrow"><button class="btn r" id="clr">Clear history</button></div></div></div></div></div>`;
+ $('#bk').onclick=()=>go('home');
+ $$('#dif button').forEach(b=>b.onclick=()=>{SET.diff=+b.dataset.v;saveSet();grown();});
+ $$('#tops button').forEach(b=>b.onclick=()=>{const k=b.dataset.t;SET.topics[k]=SET.topics[k]===false?true:false;saveSet();grown();});
+ $$('#tmr2 button').forEach(b=>b.onclick=()=>{SET.timer=b.dataset.v;saveSet();grown();});
+ $$('#snd button').forEach(b=>b.onclick=()=>{SET.sound=b.dataset.v=='1';saveSet();grown();});
+ $('#clr').onclick=()=>{if(confirm('Clear all play history and best times?')){LOG=[];BEST={};LS.set('log',LOG);LS.set('best',BEST);grown();}};}
+// ===== workshop: make your own lock =====
+let W={type:'keypad',q:'',a:'',hint:'',dir:[]};
+const IDEAS=['What is 25 × 4 − 11?','I am a prime number between 20 and 30, and my digits add up to 11. What am I?','What is 3/4 of 48?','A pizza has 8 slices. Dad eats 3/8 of it. How many slices are left?','What is the next number? 3, 6, 12, 24, ...','How many minutes from 2:45 to 4:10?','Area of a 12 by 7 rectangle?','What is 1.5 + 2.75 + 0.25?','What is the smallest number that both 6 and 8 go into?','Unscramble the word: T A M H'];
+const WT=[['keypad','🔢 Keypad'],['dial','🎡 3 dials'],['word','🔤 Word'],['dir','⬆️ Arrows']];
+function workshop(){app.innerHTML=`<div class="page"><div class="wrap"><div class="topb"><button class="btn g" id="bk">← Rooms</button><h1>🛠️ Lock Workshop</h1></div><div class="cols">
+ <div class="panel"><h3>1. Pick a lock</h3><div class="seg" id="wt">${WT.map(([v,n])=>`<button data-v="${v}" class="${W.type==v?'on':''}">${n}</button>`).join('')}</div>
+ <label class="fl" for="wq">2. Your puzzle for Dad</label><textarea class="fld" id="wq" placeholder="Write a question or a riddle...">${esc(W.q)}</textarea><div class="hrow" style="margin-top:6px"><button class="btn g" id="idea">🎲 Give me an idea</button></div>
+ <label class="fl" for="wa">3. The secret answer ${W.type=='dial'?'(exactly 3 digits)':W.type=='word'?'(3 to 6 letters)':W.type=='dir'?'(3 to 8 arrows)':'(a number)'}</label>
+ ${W.type=='dir'?`<div class="mech" id="wdir"></div>`:`<input class="fld" id="wa" value="${esc(W.a)}" autocomplete="off" ${W.type=='word'?'':'inputmode="decimal"'} placeholder="${W.type=='word'?'WORD':'123'}">`}
+ <label class="fl" for="wh">4. A hint for Dad (optional)</label><input class="fld" id="wh" value="${esc(W.hint)}" placeholder="Think about...">
+ <div class="msg bad" id="wm"></div><button class="go" id="lockIt">🔒 Lock it! Hand to Dad</button></div>
+ <div class="panel"><h3>Your locks</h3><div class="mylist">${MINE.map((l,i)=>`<div class="myl"><span>${WT.find(w=>w[0]==l.type)[1].split(' ')[0]}</span><span class="q">${esc(l.q)}</span><button class="btn" data-play="${i}">▶ Play</button><button class="btn r" data-del="${i}" aria-label="Delete">🗑</button></div>`).join('')||'<p class="small">Locks you make are saved here so Dad can try them again later.</p>'}</div></div></div></div></div>`;
+ $('#bk').onclick=()=>go('home');
+ $$('#wt button').forEach(b=>b.onclick=()=>{save();W.type=b.dataset.v;W.a='';W.dir=[];workshop();});
+ const save=()=>{W.q=$('#wq').value;W.hint=$('#wh').value;if($('#wa'))W.a=$('#wa').value;};
+ $('#idea').onclick=()=>{$('#wq').value=pick(IDEAS);W.q=$('#wq').value;};
+ if(W.type=='dir'){const box=$('#wdir');const m={type:'dir',len:3,seq:W.dir,L:{}};const draw=()=>{box.innerHTML=mechHtml(m).replace(/<button class="go"[^>]*>[^<]*<\/button>/,'');bindMech2();};const bindMech2=()=>{box.querySelectorAll('[data-d]').forEach(b=>b.onclick=()=>{if(m.seq.length<8)m.seq.push(b.dataset.d);W.dir=m.seq;draw();});box.querySelectorAll('[data-x]').forEach(b=>b.onclick=()=>{if(b.dataset.x=='back')m.seq.pop();else m.seq.length=0;W.dir=m.seq;draw();});};draw();}
+ $$('[data-play]').forEach(b=>b.onclick=()=>handoff(MINE[+b.dataset.play]));
+ $$('[data-del]').forEach(b=>b.onclick=()=>{MINE.splice(+b.dataset.del,1);LS.set('mine',MINE);workshop();});
+ $('#lockIt').onclick=()=>{save();const q=W.q.trim();let a=(W.type=='dir'?W.dir.join(''):W.a).trim();const er=t=>{$('#wm').textContent=t;SFX.bad();};
+  if(q.length<3)return er('Write a puzzle for Dad first.');
+  if(W.type=='keypad'){if(!/^\d*\.?\d+$/.test(a))return er('The answer must be a number (like 42 or 3.5).');}
+  if(W.type=='dial'){if(!/^\d{3}$/.test(a))return er('A 3-dial lock needs exactly 3 digits, like 042.');}
+  if(W.type=='word'){a=a.toUpperCase().replace(/[^A-Z]/g,'');if(a.length<3||a.length>6)return er('Use a word with 3 to 6 letters.');}
+  if(W.type=='dir'){if(a.length<3)return er('Tap at least 3 arrows.');}
+  const lk={type:W.type,q,ans:a,hint:W.hint.trim(),made:now()};MINE.unshift(lk);MINE=MINE.slice(0,12);LS.set('mine',MINE);W={type:W.type,q:'',a:'',hint:'',dir:[]};handoff(lk);};}
+function handoff(lk){app.innerHTML=`<div class="page"><div class="ho"><div><div class="e">🙈</div><h1 style="font-size:30px;color:var(--gold)">Pass the device to Dad!</h1><p class="wp" style="color:var(--mu)">No peeking at the answer. 😄</p><button class="btn" id="ready" style="font-size:20px;padding:12px 26px">I'm Dad. Let's go!</button><p><button class="btn g" id="bk">← Back</button></p></div></div></div>`;
+ $('#ready').onclick=()=>go('dad',lk);$('#bk').onclick=()=>go('workshop');}
+function dadPlay(lk){const L={type:lk.type,ans:lk.ans,len:lk.type=='dial'?3:lk.ans.length,colors:[]};if(lk.type=='word')L.sets=wordSets(lk.ans);let tries=0,shown=false;
+ app.innerHTML=`<div class="page"><div class="wrap"><div class="topb"><button class="btn g" id="bk">← Workshop</button><h1>🔐 Kid-made lock</h1></div><div class="dadgrid"><div><div class="dadq">${esc(lk.q)}</div>${lk.hint?`<button class="btn y" id="dh">💡 Show the hint</button><div id="dhx"></div>`:''}<p class="small" id="tries">Tries: 0</p><button class="btn g" id="gu">🏳️ Give up (show answer)</button><div id="gux"></div></div><div><div class="mech" id="dm"></div><div class="msg" id="dmsg"></div></div></div></div></div>`;
+ $('#bk').onclick=()=>go('workshop');if(lk.hint)$('#dh').onclick=()=>{$('#dhx').innerHTML=`<div class="hint" style="color:#16263d"><b>HINT</b>${esc(lk.hint)}</div>`;};
+ $('#gu').onclick=()=>{shown=true;$('#gux').innerHTML=`<div class="note" style="color:#3a2f00">Answer: <b>${lk.type=='dir'?dirTxt([...lk.ans]):esc(lk.ans)}</b></div>`;};
+ const m=mkMech(L);const box=$('#dm');box.innerHTML=mechHtml(m);
+ const onTry=v=>{tries++;$('#tries').textContent='Tries: '+tries;if(mechEq(L,v)){SFX.unlock();fxUnlock();M=null;setTimeout(()=>{modal(`<div class="win"><div style="font-size:60px">🎉</div><h2>${shown?'Unlocked!':'Dad cracked it!'}</h2><p class="wp">${shown?'Next time, no peeking, Dad!':`It took ${tries} ${tries==1?'try':'tries'}.`} ${tries>2?'Great puzzle!':'Make the next one even trickier!'}</p><div class="row"><button class="btn y" id="mk">🛠️ Make another lock</button><button class="btn g" id="hm">All rooms</button></div></div>`);$('#mk').onclick=()=>go('workshop');$('#hm').onclick=()=>go('home');},900);}
+  else{SFX.bad();const d=$('#dmsg');d.className='msg bad';d.textContent=tries>=3?'Still locked! Maybe try the hint?':'Nope! Still locked.';}};
+ bindMech(box,m,onTry);M={box,m,onTry};}
+window.__esc={get S(){return S;},startRoom,go,inspect,openLock,useItem,slotTap,tryLock,mechVal,get M(){return M;},ROOMS,get SET(){return SET;}};
+document.addEventListener('pointerdown',()=>ac(),{once:true});
+home();
+
+</script></body></html>
