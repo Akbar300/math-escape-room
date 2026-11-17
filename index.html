@@ -210,6 +210,8 @@ textarea.fld{min-height:90px;resize:vertical}
 
 @media (min-width:1100px) and (min-height:760px){.rc{min-height:150px;padding:18px}.rc .ri{width:96px;height:96px;font-size:60px}.rc h2{font-size:24px}.rooms{gap:18px}.logo h1{font-size:60px}}
 @media (max-width:520px){.rc{padding:10px;gap:10px;border-bottom-width:6px}.rc .ri{width:56px;height:56px;font-size:34px}.rc h2{font-size:18px}.rc .bl{display:none}.rooms{gap:10px}.logo p{margin:6px 0 10px;font-size:14px}.hbar .btn{flex:1;min-width:150px}}
+
+/* iPhone/iPad: no double-tap zoom, no auto text resize */ html{touch-action:manipulation;-webkit-text-size-adjust:100%;text-size-adjust:100%}
 </style></head><body><div id="app"></div><div id="fx"></div>
 <script>
 // ===== RNG + helpers =====
