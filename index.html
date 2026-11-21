@@ -74,7 +74,7 @@ h1,h2,h3,.hd{font-family:"Arial Black","Arial Rounded MT Bold",Impact,system-ui,
 .slots{display:grid;grid-template-columns:repeat(auto-fill,minmax(64px,1fr));gap:6px}
 .slot{background:#0b1530;border:2px solid #2b447a;border-radius:10px;min-height:64px;padding:4px 2px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:11px;font-weight:700;line-height:1.15;text-align:center}
 .slot span{font-size:26px;line-height:1.1}.slot.sel{border-color:var(--org);background:#3a2400}.slot.newi{animation:pop .5s}
-.nts textarea{width:100%;min-height:70px;height:100%;resize:none;background:#fff8d6;color:#3a2f00;border:3px solid #c9a400;border-radius:10px;padding:7px 9px;font:600 15px/1.45 ui-monospace,Menlo,monospace}
+.nts textarea{width:100%;min-height:70px;height:100%;resize:none;background:#fff8d6;color:#3a2f00;border:3px solid #c9a400;border-radius:10px;padding:7px 9px;font:600 16px/1.45 ui-monospace,Menlo,monospace}
 .nts{flex:1;display:flex;flex-direction:column;min-height:120px}
 @keyframes pop{0%{transform:scale(.4)}70%{transform:scale(1.15)}100%{transform:scale(1)}}
 /* ---------- modal ---------- */
@@ -137,8 +137,17 @@ svg.grid,svg.shape{max-width:100%;height:auto}
 .whl b{width:58px;height:62px;display:grid;place-items:center;background:linear-gradient(#c9a227,#fff2a8 45%,#fff2a8 55%,#c9a227);color:#2a1d00;font:900 34px ui-monospace,Menlo,monospace;border-radius:8px;border:3px solid #6b5100}
 .dsep{font:900 30px ui-monospace,Menlo,monospace;color:#ffd23f}
 .slotsr{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;min-height:46px;margin-bottom:9px}
-.slotsr i{width:40px;height:40px;border-radius:9px;border:3px dashed #5a6a98;display:grid;place-items:center;font-style:normal;font-size:22px;font-weight:900}
-.slotsr i.f{border-style:solid;border-color:#fff;background:var(--c,#3a4a78)}
+.slotsr i{width:46px;height:46px;transition:transform .1s;border-radius:9px;border:3px dashed #5a6a98;display:grid;place-items:center;font-style:normal;font-size:22px;font-weight:900}
+.slotsr i.f{border-style:solid;border-color:#fff;background:var(--c,#3a4a78);cursor:grab}
+.slotsr i:empty::after{content:attr(data-n);color:#8a97bd;font:800 15px system-ui}
+.slotsr i.sel{border-color:#ffb020;box-shadow:0 0 0 4px rgba(255,176,32,.4)}
+.slotsr i.over{transform:scale(1.15);border-color:#2ea86a;box-shadow:0 0 0 4px rgba(46,168,106,.4)}
+.pal button,.slotsr i.f{touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+.pal button.dg,.slotsr i.dg{opacity:.35}
+.dgh{position:fixed;left:0;top:0;width:50px;height:50px;border-radius:12px;display:grid;place-items:center;font-size:26px;color:#111;border:3px solid #fff;background:var(--c);pointer-events:none;z-index:999;box-shadow:0 6px 14px rgba(0,0,0,.4)}
+.dragtip{margin:0 0 7px;text-align:center;font:700 13px/1.3 system-ui;color:#a9b8e0}
+.lnote{margin-top:10px;background:#fff8d6;border:3px solid #c9a400;border-radius:10px;padding:6px 9px}
+.lnote textarea{width:100%;min-height:64px;resize:vertical;background:transparent;border:0;outline:0;color:#3a2f00;font:600 16px/1.45 ui-monospace,Menlo,monospace;-webkit-user-select:text;user-select:text}
 .pal{display:flex;gap:6px}.pal button{flex:1;background:var(--c);color:#111;font-size:15px;min-width:0;padding:0 2px;border-bottom-color:rgba(0,0,0,.35)}
 .pal button span{display:block;font-size:20px;line-height:1}
 .dpad{display:grid;grid-template-columns:repeat(3,64px);grid-template-rows:repeat(2,56px);gap:7px;justify-content:center}
@@ -189,6 +198,40 @@ textarea.fld{min-height:90px;resize:vertical}
  .lkg{grid-template-columns:1fr}.cluep{max-height:38dvh}
  .dadgrid{grid-template-columns:1fr}
 }
+@media (orientation:portrait) and (max-width:860px){
+ .md.lockm{display:flex;flex-direction:column;overflow:hidden;height:calc(100dvh - 12px);max-height:calc(100dvh - 12px);padding-bottom:10px}
+ .lockm .mh{position:static;flex:none;padding:6px 12px}.lockm .mh .e{font-size:24px}.lockm .mh h2{font-size:18px}.lockm .x{min-width:40px;min-height:40px}
+ .lockm .lkg{flex:1;min-height:0;display:flex;flex-direction:column;gap:8px;padding:8px 10px 0}
+ .lockm .cluep{flex:1 1 0;min-height:110px;max-height:none;overflow:auto}
+ .lockm .lockp{flex:none;max-height:56dvh;overflow:auto}
+ .lockm .lp{font-size:15px;margin:0 0 5px}
+ .lockm .mech{padding:8px;border-radius:12px}
+ .lockm .kd{min-height:38px;font-size:24px;padding:3px 10px;margin-bottom:5px;border-width:2px}
+ .lockm .khint{font-size:12px;margin:0 0 5px}
+ .lockm .keys{gap:5px}.lockm .keys button{min-height:37px;font-size:21px;border-bottom-width:4px;border-radius:9px}
+ .lockm .keys button.kdot{font-size:24px}
+ .lockm .go{min-height:42px;font-size:17px;margin-top:6px;border-bottom-width:4px}
+ .lockm .whl button{min-height:34px;font-size:17px}.lockm .whl b{height:44px;font-size:26px}
+ .lockm .slotsr{min-height:0;margin-bottom:5px}.lockm .slotsr i{width:42px;height:42px}
+ .lockm .dragtip{font-size:11.5px;margin:0 0 5px}
+ .lockm .pal button{min-height:44px;font-size:13px}.lockm .pal button span{font-size:17px}
+ .lockm .erow{margin-top:5px}.lockm .erow button{min-height:34px;border-bottom-width:3px}
+ .lockm .dpad{grid-template-rows:repeat(2,46px);gap:5px}.lockm .dpad button{min-height:44px}
+ .lockm .hrow{margin-top:6px;flex-wrap:nowrap}.lockm .hrow .btn{padding:7px 10px;font-size:14px;min-height:38px;white-space:nowrap}
+ .lockm .lnote{margin-top:6px;padding:4px 8px}
+ .lockm .msg{margin:0;min-height:0;font-size:14px}.lockm .msg:not(:empty){margin:5px 0 0}
+ .lockm .lockp{max-height:62dvh}
+}
+@media (orientation:portrait) and (max-height:700px){
+ .lockm .kd{min-height:30px;font-size:20px;padding:1px 8px;margin-bottom:4px}
+ .lockm .keys{gap:4px}.lockm .keys button{min-height:31px;font-size:18px;border-bottom-width:3px}
+ .lockm .keys button.kdot{font-size:20px}
+ .lockm .khint{font-size:11px;line-height:1.25;margin:0 0 3px}
+ .lockm .go{min-height:36px;font-size:16px;margin-top:4px}
+ .lockm .mech{padding:6px}.lockm .hrow{margin-top:4px}.lockm .hrow .btn{min-height:34px;padding:5px 9px}
+ .lockm .pal button{min-height:38px}.lockm .whl b{height:38px;font-size:22px}
+ .lockm .dpad{grid-template-rows:repeat(2,38px)}.lockm .dpad button{min-height:36px}
+}
 @media (max-width:520px){
  .rv{padding:6px;gap:6px}.scene{border-width:3px;height:min(100cqh,130cqw)}
  .rtop .ib span,.rname{display:none}.ib{padding:0 9px}
@@ -196,7 +239,7 @@ textarea.fld{min-height:90px;resize:vertical}
  .ob .nm{font-size:9.5px;padding:0 3px;white-space:normal;line-height:1.05;text-align:center}.ob:before{display:none}
  .card{padding:7px 8px}.goal .gt{font-size:15px}
  .side{gap:6px}.slots{grid-template-columns:repeat(auto-fill,minmax(52px,1fr))}.slot{min-height:54px;font-size:10px}.slot span{font-size:22px}
- .nts textarea{min-height:56px;font-size:14px}
+ .nts textarea{min-height:56px;font-size:16px}
  .ov{padding:6px}.mb{padding:10px 12px 0}.lkg{padding:10px 10px 0;gap:10px}
  .keys button{min-height:46px}.whl button{width:48px}.whl b{width:48px;height:52px;font-size:28px}
  .abc{grid-template-columns:repeat(9,1fr)}
@@ -700,25 +743,45 @@ function bindCards(){$$('[data-card]').forEach(b=>b.onclick=()=>{$$('[data-card]
 function mkMech(L,draft){const m={type:L.type,len:L.len||0,L};
  if(L.type=='keypad')m.s=draft&&draft.s||'';
  if(L.type=='dial')m.d=draft&&draft.d?draft.d.slice():Array(L.len).fill(0);
- if(L.type=='color'||L.type=='dir')m.seq=draft&&draft.seq?draft.seq.slice():[];
+ if(L.type=='color'){m.seq=Array.from({length:m.len},(_,i)=>draft&&draft.seq&&draft.seq[i]||'');m.sel=-1;}
+ if(L.type=='dir')m.seq=draft&&draft.seq?draft.seq.slice():[];
  if(L.type=='word'){m.sets=L.sets;m.w=draft&&draft.w?draft.w.slice():L.sets.map((st,i)=>{let k;do{k=Math.floor(Math.random()*st.length);}while(st[k]==L.ans[i]&&st.length>1);return k;});m.cur=0;}
  return m;}
 function wordSets(ans){return [...ans].map(ch=>{const o=new Set([ch]);while(o.size<8)o.add(LET[Math.floor(Math.random()*26)]);return [...o].sort();});}
 function mechHtml(m){const L=m.L;
  if(m.type=='keypad')return `<div class="kd" id="kd">${m.s||'&nbsp;'}</div>${L.num?`<p class="khint">Type dollars and cents, like <b>7.45</b> or <b>$7.45</b>. Use the <b>.</b> key for the decimal point.</p>`:''}<div class="keys">${['7','8','9','4','5','6','1','2','3','.','0','⌫'].map(k=>`<button data-k="${k}" class="${k=='.'?'kdot':''}">${k}</button>`).join('')}</div><button class="go" id="lkGo">✔ Try it</button>`;
  if(m.type=='dial')return `<div class="dials">${m.d.map((d,i)=>`${L.sep&&i==L.sep?'<span class="dsep">:</span>':''}<div class="whl"><button data-up="${i}" aria-label="up">▲</button><b>${d}</b><button data-dn="${i}" aria-label="down">▼</button></div>`).join('')}</div><button class="go" id="lkGo">✔ Pull the handle</button>`;
- if(m.type=='color')return `<div class="slotsr">${Array.from({length:m.len},(_,i)=>{const c=m.seq[i];return c?`<i class="f" style="--c:${COLORS[c].c}">${COLORS[c].s}</i>`:'<i></i>';}).join('')}</div><div class="pal">${L.colors.map(c=>`<button data-c="${c}" style="--c:${COLORS[c].c}"><span>${COLORS[c].s}</span>${COLORS[c].n}</button>`).join('')}</div><div class="erow"><button data-x="back">⌫ Undo</button><button data-x="clr">Clear</button></div><button class="go" id="lkGo">✔ Try it</button>`;
+ if(m.type=='color'){const tg=colorTarget(m);return `<div class="slotsr">${m.seq.map((c,i)=>c?`<i class="f${i==tg?' sel':''}" data-s="${i}" data-n="${i+1}" data-v="${c}" style="--c:${COLORS[c].c}">${COLORS[c].s}</i>`:`<i class="${i==tg?'sel':''}" data-s="${i}" data-n="${i+1}"></i>`).join('')}</div><p class="dragtip">Drag a color into a spot. Or tap a spot, then tap a color. Drag a color out to remove it.</p><div class="pal">${L.colors.map(c=>`<button data-c="${c}" style="--c:${COLORS[c].c}"><span>${COLORS[c].s}</span>${COLORS[c].n}</button>`).join('')}</div><div class="erow"><button data-x="back">⌫ Undo</button><button data-x="clr">Clear</button></div><button class="go" id="lkGo">✔ Try it</button>`;}
  if(m.type=='dir')return `<div class="slotsr">${Array.from({length:Math.max(m.len,m.seq.length)},(_,i)=>{const d=m.seq[i];return d?`<i class="f">${dirTxt([d])}</i>`:'<i></i>';}).join('')}</div><div class="dpad">${['U','L','D','R'].map(d=>`<button data-d="${d}">${dirTxt([d])}</button>`).join('')}</div><div class="erow"><button data-x="back">⌫ Undo</button><button data-x="clr">Clear</button></div><button class="go" id="lkGo">✔ Try it</button>`;
  if(m.type=='word')return `<div class="dials">${m.w.map((k,i)=>`<div class="whl"><button data-wu="${i}" aria-label="up">▲</button><b>${m.sets[i][k]}</b><button data-wd="${i}" aria-label="down">▼</button></div>`).join('')}</div><button class="go" id="lkGo">✔ Pull the handle</button>`;}
-function mechVal(m){return m.type=='keypad'?m.s:m.type=='dial'?m.d.join(''):m.type=='word'?m.w.map((k,i)=>m.sets[i][k]).join(''):m.type=='color'?m.seq.join(','):m.seq.join('');}
+function mechVal(m){return m.type=='keypad'?m.s:m.type=='dial'?m.d.join(''):m.type=='word'?m.w.map((k,i)=>m.sets[i][k]).join(''):m.type=='color'?(m.seq.every(Boolean)?m.seq.join(','):''):m.seq.join('');}
 function mechEq(L,v){if(L.type=='keypad')return numAnsEq(L.ans,v);return v===L.ans;}
+function colorTarget(m){return m.sel>=0&&m.sel<m.len?m.sel:m.seq.findIndex(c=>!c);}
+function colorBind(box,m,re){let dr=null,sup=0;const Q=q=>box.querySelectorAll(q);
+ const cleanup=()=>{if(dr){if(dr.g)dr.g.remove();dr.el.classList.remove('dg');}Q('.slotsr i.over').forEach(x=>x.classList.remove('over'));dr=null;};
+ Q('.pal button').forEach(b=>b.onclick=()=>{if(Date.now()-sup<350)return;SFX.click();const i=colorTarget(m);if(i<0){toast('All spots are full. Tap a spot to change it.');return;}m.seq[i]=b.dataset.c;m.sel=-1;re();});
+ Q('.slotsr i').forEach(sl=>sl.onclick=()=>{if(Date.now()-sup<350)return;SFX.click();const i=+sl.dataset.s;if(m.sel===i&&m.seq[i])m.seq[i]='';else m.sel=i;re();});
+ Q('.pal button,.slotsr i.f').forEach(el=>{
+  el.addEventListener('pointerdown',e=>{if(e.pointerType=='mouse'&&e.button!==0)return;dr={el,c:el.dataset.c||el.dataset.v,from:el.dataset.s!=null?+el.dataset.s:-1,x:e.clientX,y:e.clientY,on:false,g:null};try{el.setPointerCapture(e.pointerId);}catch(_){}});
+  el.addEventListener('pointermove',e=>{if(!dr||dr.el!==el)return;
+   if(!dr.on){if(Math.hypot(e.clientX-dr.x,e.clientY-dr.y)<8)return;dr.on=true;const g=document.createElement('div');g.className='dgh';g.style.setProperty('--c',COLORS[dr.c].c);g.textContent=COLORS[dr.c].s;document.body.appendChild(g);dr.g=g;el.classList.add('dg');}
+   dr.g.style.transform=`translate(${e.clientX-25}px,${e.clientY-25}px)`;
+   const t=document.elementFromPoint(e.clientX,e.clientY),sl=t&&t.closest?t.closest('.slotsr i'):null;
+   Q('.slotsr i.over').forEach(x=>x.classList.remove('over'));if(sl&&box.contains(sl))sl.classList.add('over');e.preventDefault();});
+  const up=e=>{if(!dr||dr.el!==el)return;const d=dr;
+   if(d.on&&e.type=='pointerup'){const t=document.elementFromPoint(e.clientX,e.clientY),sl=t&&t.closest?t.closest('.slotsr i'):null;
+    if(sl&&box.contains(sl)){const j=+sl.dataset.s;if(d.from<0)m.seq[j]=d.c;else if(d.from!==j){const x=m.seq[j];m.seq[j]=m.seq[d.from];m.seq[d.from]=x;}SFX.click();}
+    else if(d.from>=0){m.seq[d.from]='';SFX.click();}
+    sup=Date.now();cleanup();m.sel=-1;re();return;}
+   if(d.on)sup=Date.now();cleanup();};
+  el.addEventListener('pointerup',up);el.addEventListener('pointercancel',up);});}
 function bindMech(box,m,onTry){const re=()=>{box.innerHTML=mechHtml(m);bindMech(box,m,onTry);};
  box.querySelectorAll('[data-k]').forEach(b=>b.onclick=()=>{SFX.click();const k=b.dataset.k;if(k=='⌫')m.s=m.s.slice(0,-1);else if(k=='$'||k=='£'||k=='€'){if(!m.s.startsWith('$')&&m.s.length<10)m.s='$'+m.s;}else if(m.s.length<10&&!(k=='.'&&(m.s.includes('.')||m.s.includes(','))))m.s+=k;box.querySelector('#kd').innerHTML=m.s||'&nbsp;';});
  box.querySelectorAll('[data-up],[data-dn]').forEach(b=>b.onclick=()=>{SFX.click();const i=+(b.dataset.up??b.dataset.dn);m.d[i]=(m.d[i]+(b.dataset.up!=null?1:9))%10;re();});
  box.querySelectorAll('[data-wu],[data-wd]').forEach(b=>b.onclick=()=>{SFX.click();const i=+(b.dataset.wu??b.dataset.wd),n=m.sets[i].length;m.w[i]=(m.w[i]+(b.dataset.wu!=null?n-1:1))%n;re();});
- box.querySelectorAll('[data-c]').forEach(b=>b.onclick=()=>{SFX.click();if(m.seq.length<m.len)m.seq.push(b.dataset.c);re();});
+ if(m.type=='color')colorBind(box,m,re);
  box.querySelectorAll('[data-d]').forEach(b=>b.onclick=()=>{SFX.click();if(m.seq.length<Math.max(m.len,14))m.seq.push(b.dataset.d);re();});
- box.querySelectorAll('[data-x]').forEach(b=>b.onclick=()=>{if(b.dataset.x=='back')m.seq.pop();else m.seq=[];re();});
+ box.querySelectorAll('[data-x]').forEach(b=>b.onclick=()=>{if(m.type=='color'){if(b.dataset.x=='back'){const k=m.seq.map((c,i)=>c?i:-1).filter(i=>i>=0).pop();if(k!==undefined)m.seq[k]='';}else m.seq=Array(m.len).fill('');m.sel=-1;}else if(b.dataset.x=='back')m.seq.pop();else m.seq=[];re();});
  box.querySelector('#lkGo').onclick=()=>onTry(mechVal(m));}
 function mechKey(e){if(!M||!M.box)return;const m=M.m;const k=e.key;
  if(k=='Enter'){e.preventDefault();M.box.querySelector('#lkGo').click();return;}
@@ -733,12 +796,12 @@ function hintsHtml(hs,n){return hs.slice(0,n).map((h,i)=>`<div class="hint"><b>$
 function openLock(id){touch();const L=L_(id);if(!clueFound(L)){toast('Find and read '+clueTitle(L)+' first.');return;}
  if(L.type=='word'&&!S.wheels[id])S.wheels[id]=wordSets(L.ans);if(L.type=='word')L.sets=S.wheels[id];
  const m=mkMech(L,S.drafts[id]);S.drafts[id]=m;
- modal(`${head('🔒',L.title)}<div class="lkg"><section class="cluep">${cardsPane(L.clueFrom,id)}</section><section class="lockp"><p class="lp">${L.prompt}</p><div class="mech" id="mech"></div><div class="msg" id="lmsg"></div><div class="hrow"><button class="btn y" id="lh"></button></div><div id="hl"></div></section></div>`,'wide');
- bindClose(refresh);bindCards();const box=$('#mech');box.innerHTML=mechHtml(m);const onTry=v=>tryLock(id,v);bindMech(box,m,onTry);M={box,m,onTry};LOCKCTX=id;renderHints(id);$('#lh').onclick=()=>{useHint(id);renderHints(id);};}
+ modal(`${head('🔒',L.title)}<div class="lkg"><section class="cluep">${cardsPane(L.clueFrom,id)}</section><section class="lockp"><p class="lp">${L.prompt}</p><div class="mech" id="mech"></div><div class="msg" id="lmsg"></div><div class="hrow"><button class="btn y" id="lh"></button><button class="btn g" id="nb">📝 Notes</button></div><div class="lnote" id="lnote" hidden><textarea id="nt2" rows="3" spellcheck="false" placeholder="Jot clues, a grid, numbers..."></textarea></div><div id="hl"></div></section></div>`,'wide lockm');
+ bindClose(refresh);bindCards();const n2=$('#nt2');n2.value=S.notes||'';n2.oninput=e=>{S.notes=e.target.value;const sd=$('#nt');if(sd)sd.value=S.notes;};$('#nb').onclick=()=>{const l=$('#lnote');l.hidden=!l.hidden;if(!l.hidden)n2.focus();};const box=$('#mech');box.innerHTML=mechHtml(m);const onTry=v=>tryLock(id,v);bindMech(box,m,onTry);M={box,m,onTry};LOCKCTX=id;renderHints(id);$('#lh').onclick=()=>{useHint(id);renderHints(id);};}
 function renderHints(id){const L=L_(id),n=S.hints[id]||0;$('#hl').innerHTML=hintsHtml(L.hints,n);const b=$('#lh');b.textContent=n>=3?'💡 All hints shown':`💡 ${TIER[n]} (${n+1} of 3)`;b.disabled=n>=3;}
 function useHint(id){touch();S.hints[id]=Math.min(3,(S.hints[id]||0)+1);}
 const NOPE=['Not yet! Check your clue card again.','So close to cracking it. Try once more!','Hmm, the lock did not budge. Double-check one step.','Not quite. Real escape teams retry all the time!'];
-function tryLock(id,v){touch();const L=L_(id);if(!v){toast('Enter something first!');return;}
+function tryLock(id,v){touch();const L=L_(id);if(!v){toast(L.type=='color'?'Fill every spot first!':'Enter something first!');return;}
  if(mechEq(L,v)){solve(id);return;}
  S.wrong[id]=(S.wrong[id]||0)+1;SFX.bad();const md=$('.md');md.classList.remove('shake');void md.offsetWidth;md.classList.add('shake');
  const msg=$('#lmsg');msg.className='msg bad';msg.textContent=NOPE[(S.wrong[id]-1)%NOPE.length]+(S.wrong[id]>=3&&(S.hints[id]||0)<3?' Want a hint? Tap the yellow button.':'');if(S.wrong[id]>=3)$('#lh').classList.add('pulse');}
