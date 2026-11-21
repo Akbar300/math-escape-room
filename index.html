@@ -146,6 +146,8 @@ svg.grid,svg.shape{max-width:100%;height:auto}
 .pal button.dg,.slotsr i.dg{opacity:.35}
 .dgh{position:fixed;left:0;top:0;width:50px;height:50px;border-radius:12px;display:grid;place-items:center;font-size:26px;color:#111;border:3px solid #fff;background:var(--c);pointer-events:none;z-index:999;box-shadow:0 6px 14px rgba(0,0,0,.4)}
 .dragtip{margin:0 0 7px;text-align:center;font:700 13px/1.3 system-ui;color:#a9b8e0}
+[hidden]{display:none!important}
+.cluep .lnote{margin:0}.cluep .lnote textarea{min-height:min(240px,42dvh)}.hpane{padding-bottom:4px}
 .lnote{margin-top:10px;background:#fff8d6;border:3px solid #c9a400;border-radius:10px;padding:6px 9px}
 .lnote textarea{width:100%;min-height:64px;resize:vertical;background:transparent;border:0;outline:0;color:#3a2f00;font:600 16px/1.45 ui-monospace,Menlo,monospace;-webkit-user-select:text;user-select:text}
 .pal{display:flex;gap:6px}.pal button{flex:1;background:var(--c);color:#111;font-size:15px;min-width:0;padding:0 2px;border-bottom-color:rgba(0,0,0,.35)}
@@ -218,7 +220,7 @@ textarea.fld{min-height:90px;resize:vertical}
  .lockm .erow{margin-top:5px}.lockm .erow button{min-height:34px;border-bottom-width:3px}
  .lockm .dpad{grid-template-rows:repeat(2,46px);gap:5px}.lockm .dpad button{min-height:44px}
  .lockm .hrow{margin-top:6px;flex-wrap:nowrap}.lockm .hrow .btn{padding:7px 10px;font-size:14px;min-height:38px;white-space:nowrap}
- .lockm .lnote{margin-top:6px;padding:4px 8px}
+ .lockm .cluep .lnote{margin:0;padding:6px 8px}
  .lockm .msg{margin:0;min-height:0;font-size:14px}.lockm .msg:not(:empty){margin:5px 0 0}
  .lockm .lockp{max-height:62dvh}
 }
@@ -796,9 +798,9 @@ function hintsHtml(hs,n){return hs.slice(0,n).map((h,i)=>`<div class="hint"><b>$
 function openLock(id){touch();const L=L_(id);if(!clueFound(L)){toast('Find and read '+clueTitle(L)+' first.');return;}
  if(L.type=='word'&&!S.wheels[id])S.wheels[id]=wordSets(L.ans);if(L.type=='word')L.sets=S.wheels[id];
  const m=mkMech(L,S.drafts[id]);S.drafts[id]=m;
- modal(`${head('🔒',L.title)}<div class="lkg"><section class="cluep">${cardsPane(L.clueFrom,id)}</section><section class="lockp"><p class="lp">${L.prompt}</p><div class="mech" id="mech"></div><div class="msg" id="lmsg"></div><div class="hrow"><button class="btn y" id="lh"></button><button class="btn g" id="nb">📝 Notes</button></div><div class="lnote" id="lnote" hidden><textarea id="nt2" rows="3" spellcheck="false" placeholder="Jot clues, a grid, numbers..."></textarea></div><div id="hl"></div></section></div>`,'wide lockm');
- bindClose(refresh);bindCards();const n2=$('#nt2');n2.value=S.notes||'';n2.oninput=e=>{S.notes=e.target.value;const sd=$('#nt');if(sd)sd.value=S.notes;};$('#nb').onclick=()=>{const l=$('#lnote');l.hidden=!l.hidden;if(!l.hidden)n2.focus();};const box=$('#mech');box.innerHTML=mechHtml(m);const onTry=v=>tryLock(id,v);bindMech(box,m,onTry);M={box,m,onTry};LOCKCTX=id;renderHints(id);$('#lh').onclick=()=>{useHint(id);renderHints(id);};}
-function renderHints(id){const L=L_(id),n=S.hints[id]||0;$('#hl').innerHTML=hintsHtml(L.hints,n);const b=$('#lh');b.textContent=n>=3?'💡 All hints shown':`💡 ${TIER[n]} (${n+1} of 3)`;b.disabled=n>=3;}
+ modal(`${head('🔒',L.title)}<div class="lkg"><section class="cluep">${cardsPane(L.clueFrom,id).replace('</div><div class="cbody"','<button data-pane="hints" id="tbH">💡 Hints</button><button data-pane="notes" id="tbN">📝 Notes</button></div><div class="cbody"')}<div id="hl" class="hpane" hidden></div><div class="lnote" id="lnote" hidden><textarea id="nt2" spellcheck="false" placeholder="Jot clues, a grid, numbers..."></textarea></div></section><section class="lockp"><p class="lp">${L.prompt}</p><div class="mech" id="mech"></div><div class="msg" id="lmsg"></div><div class="hrow"><button class="btn y" id="lh"></button><button class="btn g" id="nb">📝 Notes</button></div></section></div>`,'wide lockm');
+ bindClose(refresh);bindCards();const n2=$('#nt2');n2.value=S.notes||'';n2.oninput=e=>{S.notes=e.target.value;const sd=$('#nt');if(sd)sd.value=S.notes;};const showPane=n=>{$('#cbody').hidden=n!='card';$('#hl').hidden=n!='hints';$('#lnote').hidden=n!='notes';if(n!='card')$$('[data-card]').forEach(x=>x.classList.remove('on'));$('#tbH').classList.toggle('on',n=='hints');$('#tbN').classList.toggle('on',n=='notes');if(n=='notes')n2.focus();};$$('[data-card]').forEach(b=>b.addEventListener('click',()=>showPane('card')));$('#tbH').onclick=()=>showPane('hints');$('#tbN').onclick=()=>showPane('notes');$('#nb').onclick=()=>showPane('notes');const box=$('#mech');box.innerHTML=mechHtml(m);const onTry=v=>tryLock(id,v);bindMech(box,m,onTry);M={box,m,onTry};LOCKCTX=id;renderHints(id);$('#lh').onclick=()=>{useHint(id);renderHints(id);$('#tbH').click();};}
+function renderHints(id){const L=L_(id),n=S.hints[id]||0;$('#hl').innerHTML=n?hintsHtml(L.hints,n):'<p style="color:#556;margin:6px 2px">No hints used yet. Tap the yellow hint button to get a free nudge.</p>';const tb=$('#tbH');if(tb)tb.textContent=n?`💡 Hints ${n}`:'💡 Hints';const b=$('#lh');b.textContent=n>=3?'💡 All hints shown':`💡 ${TIER[n]} (${n+1} of 3)`;b.disabled=n>=3;}
 function useHint(id){touch();S.hints[id]=Math.min(3,(S.hints[id]||0)+1);}
 const NOPE=['Not yet! Check your clue card again.','So close to cracking it. Try once more!','Hmm, the lock did not budge. Double-check one step.','Not quite. Real escape teams retry all the time!'];
 function tryLock(id,v){touch();const L=L_(id);if(!v){toast(L.type=='color'?'Fill every spot first!':'Enter something first!');return;}
